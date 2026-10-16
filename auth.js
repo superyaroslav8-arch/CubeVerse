@@ -1,119 +1,54 @@
-// ===== Авторизация (localStorage) =====
+function getUsers(){try{return JSON.parse(localStorage.getItem('ks_users')||'{}')}catch{return{}}}
+function saveUsers(u){localStorage.setItem('ks_users',JSON.stringify(u))}
+function getUser(){return localStorage.getItem('ks_user')||null}
+function setUser(n){n?localStorage.setItem('ks_user',n):localStorage.removeItem('ks_user')}
 
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('ks_users') || '{}'); }
-  catch { return {}; }
+function getProgress(){
+  const u=getUser();if(!u)return{};
+  try{return JSON.parse(localStorage.getItem('ks_prog_'+u)||'{}')}catch{return{}}
 }
-
-function saveUsers(users) {
-  localStorage.setItem('ks_users', JSON.stringify(users));
+function saveProgress(data){
+  const u=getUser();if(!u)return;
+  localStorage.setItem('ks_prog_'+u,JSON.stringify(data));
 }
-
-function getCurrentUser() {
-  return localStorage.getItem('ks_current') || null;
+function setScore(game,score){
+  const p=getProgress();
+  if(!p[game]||score>p[game]){p[game]=score;saveProgress(p)}
 }
+function getScore(game){return getProgress()[game]||0}
 
-function setCurrentUser(name) {
-  if (name) localStorage.setItem('ks_current', name);
-  else localStorage.removeItem('ks_current');
-}
-
-function updateAuthUI() {
-  const area = document.getElementById('authArea');
-  if (!area) return;
-  const user = getCurrentUser();
-
-  if (user) {
-    area.innerHTML = `
-      <div class="user-badge">
-        <div class="avatar">${user[0].toUpperCase()}</div>
-        <span>${user}</span>
-      </div>
-      <button class="btn btn-ghost" onclick="logout()">Выйти</button>
-    `;
-  } else {
-    area.innerHTML = `
-      <button class="btn btn-ghost" onclick="openAuth('login')">Войти</button>
-      <button class="btn btn-primary" onclick="openAuth('register')">Регистрация</button>
-    `;
+function updateAuthUI(){
+  const a=document.getElementById('authArea');if(!a)return;
+  const u=getUser();
+  if(u){
+    a.innerHTML=`<div class="user-badge"><div class="ava">${u[0].toUpperCase()}</div><span>${u}</span></div>
+      <button class="btn btn-ghost" onclick="logout()">Выйти</button>`;
+  }else{
+    a.innerHTML=`<button class="btn btn-ghost" onclick="openAuth('login')">Войти</button>
+      <button class="btn btn-primary" onclick="openAuth('reg')">Регистрация</button>`;
   }
 }
+function openAuth(m){document.getElementById('authModal').classList.add('show');m==='reg'?showReg():showLogin();document.getElementById('authErr').classList.remove('show')}
+function closeAuth(){document.getElementById('authModal').classList.remove('show')}
+function showLogin(){document.getElementById('mTitle').textContent='Вход';document.getElementById('mSub').textContent='Войди, чтобы сохранять прогресс';document.getElementById('loginForm').style.display='block';document.getElementById('regForm').style.display='none';document.getElementById('authErr').classList.remove('show')}
+function showReg(){document.getElementById('mTitle').textContent='Регистрация';document.getElementById('mSub').textContent='Создай аккаунт для сохранения';document.getElementById('loginForm').style.display='none';document.getElementById('regForm').style.display='block';document.getElementById('authErr').classList.remove('show')}
+function err(m){const e=document.getElementById('authErr');e.textContent=m;e.classList.add('show')}
 
-function openAuth(mode) {
-  document.getElementById('authModal').classList.add('show');
-  if (mode === 'register') showRegister();
-  else showLogin();
-  document.getElementById('authError').classList.remove('show');
+function doReg(){
+  const n=document.getElementById('regName').value.trim(),p=document.getElementById('regPass').value,p2=document.getElementById('regPass2').value;
+  if(n.length<2)return err('Логин слишком короткий');
+  if(p.length<3)return err('Пароль слишком короткий');
+  if(p!==p2)return err('Пароли не совпадают');
+  const u=getUsers();
+  if(u[n.toLowerCase()])return err('Логин уже занят');
+  u[n.toLowerCase()]={name:n,pass:p};saveUsers(u);setUser(n);closeAuth();updateAuthUI();
 }
-
-function closeAuth() {
-  document.getElementById('authModal').classList.remove('show');
+function doLogin(){
+  const n=document.getElementById('loginName').value.trim(),p=document.getElementById('loginPass').value;
+  if(!n||!p)return err('Заполни все поля');
+  const u=getUsers()[n.toLowerCase()];
+  if(!u||u.pass!==p)return err('Неверный логин или пароль');
+  setUser(u.name);closeAuth();updateAuthUI();
 }
-
-function showLogin() {
-  document.getElementById('modalTitle').textContent = 'Вход';
-  document.getElementById('modalSubtitle').textContent = 'Войди в свой аккаунт';
-  document.getElementById('loginForm').style.display = 'block';
-  document.getElementById('registerForm').style.display = 'none';
-  document.getElementById('authError').classList.remove('show');
-}
-
-function showRegister() {
-  document.getElementById('modalTitle').textContent = 'Регистрация';
-  document.getElementById('modalSubtitle').textContent = 'Создай новый аккаунт';
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('registerForm').style.display = 'block';
-  document.getElementById('authError').classList.remove('show');
-}
-
-function showError(msg) {
-  const el = document.getElementById('authError');
-  el.textContent = msg;
-  el.classList.add('show');
-}
-
-function doRegister() {
-  const name = document.getElementById('regName').value.trim();
-  const pass = document.getElementById('regPass').value;
-  const pass2 = document.getElementById('regPass2').value;
-
-  if (!name || name.length < 2) return showError('Логин слишком короткий');
-  if (!pass || pass.length < 3) return showError('Пароль слишком короткий');
-  if (pass !== pass2) return showError('Пароли не совпадают');
-
-  const users = getUsers();
-  if (users[name.toLowerCase()]) return showError('Такой логин уже занят');
-
-  users[name.toLowerCase()] = { name, pass };
-  saveUsers(users);
-  setCurrentUser(name);
-  closeAuth();
-  updateAuthUI();
-}
-
-function doLogin() {
-  const name = document.getElementById('loginName').value.trim();
-  const pass = document.getElementById('loginPass').value;
-
-  if (!name || !pass) return showError('Заполни все поля');
-
-  const users = getUsers();
-  const user = users[name.toLowerCase()];
-
-  if (!user || user.pass !== pass) return showError('Неверный логин или пароль');
-
-  setCurrentUser(user.name);
-  closeAuth();
-  updateAuthUI();
-}
-
-function logout() {
-  setCurrentUser(null);
-  updateAuthUI();
-}
-
-// Закрытие по клику вне модалки
-document.addEventListener('click', e => {
-  const modal = document.getElementById('authModal');
-  if (e.target === modal) closeAuth();
-});
+function logout(){setUser(null);updateAuthUI()}
+document.addEventListener('click',e=>{if(e.target.id==='authModal')closeAuth()});

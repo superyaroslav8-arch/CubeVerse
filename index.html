@@ -2,138 +2,98 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Кибер-склад — Игры</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
+<header class="header">
+  <a href="index.html" class="logo-link"><img src="logo.svg" alt=""><span>Кибер-склад</span></a>
+  <div class="search-box"><span style="opacity:.45">🔍</span><input id="searchInput" placeholder="Поиск игр..." oninput="filterGames()"></div>
+  <div class="header-right" id="authArea"></div>
+</header>
 
-  <header class="header">
-    <a href="index.html" class="logo-link">
-      <img src="logo.svg" alt="Кибер-склад">
-      <span>Кибер-склад</span>
-    </a>
+<div class="container">
+  <section class="section">
+    <div class="section-header"><h2>🔥 Рекомендуемые</h2><span>сейчас в топе</span></div>
+    <div class="games-grid" id="featured"></div>
+  </section>
+  <section class="section">
+    <div class="section-header"><h2>⚽ Спорт</h2></div>
+    <div class="games-grid" id="sports"></div>
+  </section>
+  <section class="section">
+    <div class="section-header"><h2>🎮 Все игры</h2></div>
+    <div class="games-grid" id="all"></div>
+  </section>
+</div>
 
-    <div class="search-box">
-      <span style="opacity:0.5">🔍</span>
-      <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames()">
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <h2 id="mTitle">Вход</h2>
+    <p class="sub" id="mSub">Войди, чтобы сохранять прогресс</p>
+    <div class="err" id="authErr"></div>
+    <div id="loginForm">
+      <label>Логин</label><input id="loginName" maxlength="20" placeholder="Твой логин">
+      <label>Пароль</label><input id="loginPass" type="password" maxlength="30" placeholder="Пароль">
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Войти</button>
+      <div class="switch">Нет аккаунта? <a onclick="showReg()">Регистрация</a></div>
     </div>
-
-    <div class="header-right" id="authArea">
-      <!-- заполняется через JS -->
-    </div>
-  </header>
-
-  <div class="container">
-    <section class="section">
-      <div class="section-header">
-        <h2>🔥 Рекомендуемые</h2>
-        <span>лучшие игры прямо сейчас</span>
-      </div>
-      <div class="games-grid" id="featuredGames"></div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <h2>⭐ Популярные</h2>
-      </div>
-      <div class="games-grid" id="popularGames"></div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <h2>🎮 Все игры</h2>
-      </div>
-      <div class="games-grid" id="allGames"></div>
-    </section>
-  </div>
-
-  <!-- AUTH MODAL -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal">
-      <h2 id="modalTitle">Вход</h2>
-      <p class="subtitle" id="modalSubtitle">Войди в свой аккаунт</p>
-      <div class="error" id="authError"></div>
-
-      <div id="loginForm">
-        <label>Логин</label>
-        <input type="text" id="loginName" placeholder="Твой логин" maxlength="20">
-        <label>Пароль</label>
-        <input type="password" id="loginPass" placeholder="Пароль" maxlength="30">
-        <button class="btn btn-primary btn-full" onclick="doLogin()">Войти</button>
-        <div class="switch">Нет аккаунта? <a onclick="showRegister()">Зарегистрироваться</a></div>
-      </div>
-
-      <div id="registerForm" style="display:none">
-        <label>Логин</label>
-        <input type="text" id="regName" placeholder="Придумай логин" maxlength="20">
-        <label>Пароль</label>
-        <input type="password" id="regPass" placeholder="Придумай пароль" maxlength="30">
-        <label>Повтори пароль</label>
-        <input type="password" id="regPass2" placeholder="Повтори пароль" maxlength="30">
-        <button class="btn btn-primary btn-full" onclick="doRegister()">Создать аккаунт</button>
-        <div class="switch">Уже есть аккаунт? <a onclick="showLogin()">Войти</a></div>
-      </div>
+    <div id="regForm" style="display:none">
+      <label>Логин</label><input id="regName" maxlength="20" placeholder="Придумай логин">
+      <label>Пароль</label><input id="regPass" type="password" maxlength="30" placeholder="Пароль">
+      <label>Повтори пароль</label><input id="regPass2" type="password" maxlength="30" placeholder="Ещё раз">
+      <button class="btn btn-primary btn-full" onclick="doReg()">Создать аккаунт</button>
+      <div class="switch">Уже есть? <a onclick="showLogin()">Войти</a></div>
     </div>
   </div>
+</div>
 
-  <script src="auth.js"></script>
-  <script>
-    const GAMES = [
-      { id:'obby', name:'Obby Adventure', desc:'Пройди сложные препятствия и доберись до финиша! Много уровней.', emoji:'🏃', color:'linear-gradient(135deg,#ff6b6b,#ee5a24)', players:1247, file:'games/obby.html' },
-      { id:'tycoon', name:'Click Tycoon', desc:'Зарабатывай монеты, покупай улучшения и стань самым богатым!', emoji:'💰', color:'linear-gradient(135deg,#f9ca24,#f0932b)', players:892, file:'games/tycoon.html' },
-      { id:'racing', name:'Speed Race', desc:'Гонки на скорость. Обгони всех и приди первым!', emoji:'🏎️', color:'linear-gradient(135deg,#4834d4,#686de0)', players:654, file:'games/racing.html' },
-      { id:'hangout', name:'Hangout Plaza', desc:'Гуляй, общайся и танцуй вместе с другими игроками!', emoji:'👫', color:'linear-gradient(135deg,#6ab04c,#badc58)', players:2103, file:'games/hangout.html' },
-      { id:'pets', name:'Pet Simulator', desc:'Собирай питомцев, качай их и становись легендой!', emoji:'🐶', color:'linear-gradient(135deg,#eb4d4b,#ff7979)', players:1789, file:'games/pets.html' },
-      { id:'obby2', name:'Sky Obby', desc:'Сложный паркур в небесах. Много уровней и ловушек!', emoji:'🏗️', color:'linear-gradient(135deg,#22a6b3,#7ed6df)', players:543, file:'games/obby2.html' },
-      { id:'snake', name:'Змейка', desc:'Классическая змейка. Собирай еду и расти!', emoji:'🐍', color:'linear-gradient(135deg,#00b894,#55efc4)', players:1102, file:'games/snake.html' },
-      { id:'flappy', name:'Flappy Cube', desc:'Летай между трубами и не врежься!', emoji:'📦', color:'linear-gradient(135deg,#fd79a8,#e84393)', players:876, file:'games/flappy.html' },
-      { id:'memory', name:'Мемори', desc:'Найди все пары карточек. Тренируй память!', emoji:'🧠', color:'linear-gradient(135deg,#a29bfe,#6c5ce7)', players:654, file:'games/memory.html' },
-      { id:'breakout', name:'Арканоид', desc:'Разбей все блоки платформой и шариком!', emoji:'🧱', color:'linear-gradient(135deg,#fdcb6e,#e17055)', players:721, file:'games/breakout.html' },
-      { id:'dodge', name:'Уворот', desc:'Уворачивайся от падающих блоков как можно дольше!', emoji:'⚡', color:'linear-gradient(135deg,#74b9ff,#0984e3)', players:498, file:'games/dodge.html' },
-      { id:'2048', name:'2048', desc:'Соединяй одинаковые плитки и набери 2048!', emoji:'🔢', color:'linear-gradient(135deg,#ffeaa7,#fdcb6e)', players:1340, file:'games/game2048.html' }
-    ];
+<script src="auth.js"></script>
+<script>
+const GAMES=[
+  {id:'obby',name:'Obby Adventure',desc:'Паркур на 6 уровней. Пройди до конца!',emoji:'🏃',color:'linear-gradient(135deg,#ff6b6b,#ee5a24)',players:1247,file:'games/obby.html',cat:'action'},
+  {id:'tycoon',name:'Click Tycoon',desc:'Кликай, зарабатывай, прокачивайся!',emoji:'💰',color:'linear-gradient(135deg,#f9ca24,#f0932b)',players:892,file:'games/tycoon.html',cat:'idle'},
+  {id:'racing',name:'Speed Race',desc:'Гонки. Обгони всех!',emoji:'🏎️',color:'linear-gradient(135deg,#4834d4,#686de0)',players:654,file:'games/racing.html',cat:'action'},
+  {id:'hangout',name:'Hangout Plaza',desc:'Гуляй и общайся!',emoji:'👫',color:'linear-gradient(135deg,#6ab04c,#badc58)',players:2103,file:'games/hangout.html',cat:'social'},
+  {id:'pets',name:'Pet Simulator',desc:'Собирай и качай питомцев!',emoji:'🐶',color:'linear-gradient(135deg,#eb4d4b,#ff7979)',players:1789,file:'games/pets.html',cat:'idle'},
+  {id:'obby2',name:'Sky Obby',desc:'Небесный паркур. 5 уровней.',emoji:'🏗️',color:'linear-gradient(135deg,#22a6b3,#7ed6df)',players:543,file:'games/obby2.html',cat:'action'},
+  {id:'snake',name:'Змейка',desc:'Классика. Расти и не врежься!',emoji:'🐍',color:'linear-gradient(135deg,#00b894,#55efc4)',players:1102,file:'games/snake.html',cat:'arcade'},
+  {id:'flappy',name:'Flappy Cube',desc:'Летай между труб!',emoji:'📦',color:'linear-gradient(135deg,#fd79a8,#e84393)',players:876,file:'games/flappy.html',cat:'arcade'},
+  {id:'memory',name:'Мемори',desc:'Найди все пары.',emoji:'🧠',color:'linear-gradient(135deg,#a29bfe,#6c5ce7)',players:654,file:'games/memory.html',cat:'puzzle'},
+  {id:'breakout',name:'Арканоид',desc:'Разбей все блоки!',emoji:'🧱',color:'linear-gradient(135deg,#fdcb6e,#e17055)',players:721,file:'games/breakout.html',cat:'arcade'},
+  {id:'dodge',name:'Уворот',desc:'Уворачивайся от блоков!',emoji:'⚡',color:'linear-gradient(135deg,#74b9ff,#0984e3)',players:498,file:'games/dodge.html',cat:'action'},
+  {id:'g2048',name:'2048',desc:'Собери плитку 2048!',emoji:'🔢',color:'linear-gradient(135deg,#ffeaa7,#fdcb6e)',players:1340,file:'games/game2048.html',cat:'puzzle'},
+  // SPORTS
+  {id:'football',name:'Футбол',desc:'Забивай голы! Играй против бота.',emoji:'⚽',color:'linear-gradient(135deg,#00b894,#00cec9)',players:1560,file:'games/football.html',cat:'sport'},
+  {id:'hockey',name:'Хоккей',desc:'Забрось шайбу в ворота соперника!',emoji:'🏒',color:'linear-gradient(135deg,#74b9ff,#0984e3)',players:980,file:'games/hockey.html',cat:'sport'},
+  {id:'basket',name:'Баскетбол',desc:'Бросай мяч в кольцо и набирай очки!',emoji:'🏀',color:'linear-gradient(135deg,#e17055,#d63031)',players:1120,file:'games/basket.html',cat:'sport'},
+  {id:'tennis',name:'Теннис',desc:'Отбивай мяч ракеткой!',emoji:'🎾',color:'linear-gradient(135deg,#55efc4,#00b894)',players:740,file:'games/tennis.html',cat:'sport'}
+];
 
-    function renderGames(containerId, games) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-      games.forEach(g => {
-        const card = document.createElement('div');
-        card.className = 'game-card';
-        card.onclick = () => location.href = g.file;
-        card.innerHTML = `
-          <div class="game-thumb" style="background:${g.color}">
-            ${g.emoji}
-            <div class="players">👤 ${g.players.toLocaleString('ru')}</div>
-          </div>
-          <div class="game-body">
-            <h3>${g.name}</h3>
-            <p>${g.desc}</p>
-            <div class="game-footer">
-              <button class="play-btn" onclick="event.stopPropagation(); location.href='${g.file}'">Играть</button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function filterGames() {
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      document.querySelectorAll('.game-card').forEach(card => {
-        const name = card.querySelector('h3').textContent.toLowerCase();
-        const desc = card.querySelector('p').textContent.toLowerCase();
-        card.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
-      });
-    }
-
-    renderGames('featuredGames', GAMES.slice(0, 4));
-    renderGames('popularGames', GAMES.slice(3, 8));
-    renderGames('allGames', GAMES);
-
-    // Auth UI
-    updateAuthUI();
-  </script>
+function render(id,list){
+  const el=document.getElementById(id);el.innerHTML='';
+  list.forEach(g=>{
+    const c=document.createElement('div');c.className='game-card';c.onclick=()=>location.href=g.file;
+    c.innerHTML=`<div class="game-thumb" style="background:${g.color}">${g.emoji}<div class="players">👤 ${g.players.toLocaleString('ru')}</div></div>
+      <div class="game-body"><h3>${g.name}</h3><p>${g.desc}</p>
+      <div class="game-footer"><button class="play-btn" onclick="event.stopPropagation();location.href='${g.file}'">Играть</button></div></div>`;
+    el.appendChild(c);
+  });
+}
+function filterGames(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  document.querySelectorAll('.game-card').forEach(c=>{
+    const n=c.querySelector('h3').textContent.toLowerCase();
+    const d=c.querySelector('p').textContent.toLowerCase();
+    c.style.display=(n.includes(q)||d.includes(q))?'':'none';
+  });
+}
+render('featured',GAMES.slice(0,4));
+render('sports',GAMES.filter(g=>g.cat==='sport'));
+render('all',GAMES);
+updateAuthUI();
+</script>
 </body>
 </html>
