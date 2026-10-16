@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Хоккей — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body{background:#0b0b10;overflow:hidden}
+    #c{display:block;margin:12px auto;background:#1a3a5c;border-radius:16px;max-width:100%}
+    .hud{text-align:center;padding:8px;font-size:1.2rem;color:#9a9aab}
+    .hint{text-align:center;color:#555;font-size:.88rem}
+  </style>
+</head>
+<body>
+<div class="game-header">
+  <a href="../index.html" class="back-btn">← Назад</a>
+  <div style="font-weight:700">🏒 Хоккей</div>
+  <div style="width:80px"></div>
+</div>
+<div class="hud"><span id="s1">0</span> : <span id="s2">0</span> &nbsp;•&nbsp; До 5 шайб</div>
+<canvas id="c" width="700" height="400"></canvas>
+<p class="hint">Мышь или стрелки — движение клюшки</p>
+<script src="../auth.js"></script>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let paddle={x:60,y:160,w:14,h:70},bot={x:626,y:160,w:14,h:70};
+let puck={x:350,y:200,vx:4,vy:2,r:9},s1=0,s2=0,keys={};
+
+document.addEventListener('keydown',e=>keys[e.code]=true);
+document.addEventListener('keyup',e=>keys[e.code]=false);
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  paddle.y=(e.clientY-r.top)*(400/r.height)-paddle.h/2;
+});
+
+function reset(dir=1){puck={x:350,y:200,vx:dir*4,vy:(Math.random()-.5)*3,r:9}}
+
+function loop(){
+  if(keys['ArrowUp']||keys['KeyW'])paddle.y-=6;
+  if(keys['ArrowDown']||keys['KeyS'])paddle.y+=6;
+  paddle.y=Math.max(10,Math.min(320,paddle.y));
+
+  // bot AI
+  if(puck.x>300){
+    if(bot.y+35<puck.y)bot.y+=4;else bot.y-=4;
+  }else bot.y+=(160-bot.y)*0.04;
+  bot.y=Math.max(10,Math.min(320,bot.y));
+
+  puck.x+=puck.vx;puck.y+=puck.vy;
+  if(puck.y<puck.r||puck.y>400-puck.r)puck.vy*=-1;
+
+  // paddle hit
+  if(puck.x-puck.r<paddle.x+paddle.w&&puck.x>paddle.x&&puck.y>paddle.y&&puck.y<paddle.y+paddle.h){
+    puck.vx=Math.abs(puck.vx)+0.3;puck.vy+=(puck.y-(paddle.y+35))*0.12;
+  }
+  if(puck.x+puck.r>bot.x&&puck.x<bot.x+bot.w&&puck.y>bot.y&&puck.y<bot.y+bot.h){
+    puck.vx=-Math.abs(puck.vx)-0.3;puck.vy+=(puck.y-(bot.y+35))*0.12;
+  }
+
+  if(puck.x<0){s2++;document.getElementById('s2').textContent=s2;reset(1)}
+  if(puck.x>700){s1++;document.getElementById('s1').textContent=s1;reset(-1)}
+  if(s1>=5||s2>=5){
+    if(typeof setScore==='function')setScore('hockey',s1);
+    setTimeout(()=>{alert((s1>=5?'Победа!':'Поражение')+' '+s1+':'+s2);location.reload()},150);return;
+  }
+
+  // draw ice
+  ctx.fillStyle='#1a3a5c';ctx.fillRect(0,0,700,400);
+  ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(350,0);ctx.lineTo(350,400);ctx.stroke();
+  ctx.beginPath();ctx.arc(350,200,40,0,Math.PI*2);ctx.stroke();
+  // goals
+  ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(0,100,8,200);ctx.fillRect(692,100,8,200);
+  // paddles
+  ctx.fillStyle='#00e676';ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+  ctx.fillStyle='#ff6b6b';ctx.fillRect(bot.x,bot.y,bot.w,bot.h);
+  // puck
+  ctx.fillStyle='#ddd';ctx.beginPath();ctx.arc(puck.x,puck.y,puck.r,0,Math.PI*2);ctx.fill();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body></html>

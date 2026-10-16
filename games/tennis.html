@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Теннис — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body{background:#0b0b10;overflow:hidden}
+    #c{display:block;margin:12px auto;background:#2d6a4f;border-radius:16px;max-width:100%}
+    .hud{text-align:center;padding:8px;font-size:1.2rem;color:#9a9aab}
+    .hint{text-align:center;color:#555;font-size:.88rem}
+  </style>
+</head>
+<body>
+<div class="game-header">
+  <a href="../index.html" class="back-btn">← Назад</a>
+  <div style="font-weight:700">🎾 Теннис</div>
+  <div style="width:80px"></div>
+</div>
+<div class="hud"><span id="s1">0</span> : <span id="s2">0</span> &nbsp;•&nbsp; До 7 очков</div>
+<canvas id="c" width="700" height="400"></canvas>
+<p class="hint">Мышь или стрелки ↑↓ — ракетка</p>
+<script src="../auth.js"></script>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let p1={y:160,h:70},p2={y:160,h:70},ball={x:350,y:200,vx:5,vy:2,r:8};
+let s1=0,s2=0,keys={};
+
+document.addEventListener('keydown',e=>keys[e.code]=true);
+document.addEventListener('keyup',e=>keys[e.code]=false);
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  p1.y=(e.clientY-r.top)*(400/r.height)-p1.h/2;
+});
+
+function reset(dir=1){ball={x:350,y:200,vx:dir*5,vy:(Math.random()-.5)*3,r:8}}
+
+function loop(){
+  if(keys['ArrowUp']||keys['KeyW'])p1.y-=6;
+  if(keys['ArrowDown']||keys['KeyS'])p1.y+=6;
+  p1.y=Math.max(0,Math.min(330,p1.y));
+
+  // bot
+  if(ball.vx>0){if(p2.y+35<ball.y)p2.y+=3.8;else p2.y-=3.8}
+  else p2.y+=(160-p2.y)*0.03;
+  p2.y=Math.max(0,Math.min(330,p2.y));
+
+  ball.x+=ball.vx;ball.y+=ball.vy;
+  if(ball.y<ball.r||ball.y>400-ball.r)ball.vy*=-1;
+
+  if(ball.x-ball.r<30&&ball.y>p1.y&&ball.y<p1.y+p1.h){ball.vx=Math.abs(ball.vx)+0.2;ball.vy+=(ball.y-(p1.y+35))*0.1}
+  if(ball.x+ball.r>670&&ball.y>p2.y&&ball.y<p2.y+p2.h){ball.vx=-Math.abs(ball.vx)-0.2;ball.vy+=(ball.y-(p2.y+35))*0.1}
+
+  if(ball.x<0){s2++;document.getElementById('s2').textContent=s2;reset(1)}
+  if(ball.x>700){s1++;document.getElementById('s1').textContent=s1;reset(-1)}
+  if(s1>=7||s2>=7){
+    if(typeof setScore==='function')setScore('tennis',s1);
+    setTimeout(()=>{alert((s1>=7?'Победа!':'Поражение')+' '+s1+':'+s2);location.reload()},150);return;
+  }
+
+  ctx.fillStyle='#2d6a4f';ctx.fillRect(0,0,700,400);
+  ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=2;
+  ctx.setLineDash([10,10]);ctx.beginPath();ctx.moveTo(350,0);ctx.lineTo(350,400);ctx.stroke();ctx.setLineDash([]);
+  // paddles
+  ctx.fillStyle='#fff';ctx.fillRect(18,p1.y,12,p1.h);
+  ctx.fillStyle='#ff6b6b';ctx.fillRect(670,p2.y,12,p2.h);
+  // ball
+  ctx.fillStyle='#dfff5f';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Баскетбол — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body{background:#0b0b10;overflow:hidden}
+    #c{display:block;margin:12px auto;background:#2c3e50;border-radius:16px;max-width:100%}
+    .hud{text-align:center;padding:8px;font-size:1.2rem;color:#9a9aab}
+    .hint{text-align:center;color:#555;font-size:.88rem}
+  </style>
+</head>
+<body>
+<div class="game-header">
+  <a href="../index.html" class="back-btn">← Назад</a>
+  <div style="font-weight:700">🏀 Баскетбол</div>
+  <div style="width:80px"></div>
+</div>
+<div class="hud">Очки: <span id="score">0</span> &nbsp;•&nbsp; Рекорд: <span id="rec">0</span></div>
+<canvas id="c" width="400" height="500"></canvas>
+<p class="hint">Зажми и тяни, чтобы бросить мяч</p>
+<script src="../auth.js"></script>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let ball={x:200,y:420,vx:0,vy:0,r:14,active:false};
+let score=0,dragging=false,start={x:0,y:0};
+let rec=typeof getScore==='function'?getScore('basket'):0;
+document.getElementById('rec').textContent=rec;
+
+const hoop={x:200,y:100,r:28};
+
+canvas.addEventListener('mousedown',e=>{if(!ball.active){dragging=true;const r=canvas.getBoundingClientRect();start={x:(e.clientX-r.left)*(400/r.width),y:(e.clientY-r.top)*(500/r.height)}}});
+canvas.addEventListener('mouseup',e=>{
+  if(!dragging)return;dragging=false;
+  const r=canvas.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(400/r.width),my=(e.clientY-r.top)*(500/r.height);
+  ball.vx=(start.x-mx)*0.15;ball.vy=(start.y-my)*0.15;
+  ball.active=true;
+});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();if(!ball.active){dragging=true;const t=e.touches[0],r=canvas.getBoundingClientRect();start={x:(t.clientX-r.left)*(400/r.width),y:(t.clientY-r.top)*(500/r.height)}}});
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();if(!dragging)return;dragging=false;
+  const t=e.changedTouches[0],r=canvas.getBoundingClientRect();
+  const mx=(t.clientX-r.left)*(400/r.width),my=(t.clientY-r.top)*(500/r.height);
+  ball.vx=(start.x-mx)*0.15;ball.vy=(start.y-my)*0.15;ball.active=true;
+});
+
+function resetBall(){ball={x:200,y:420,vx:0,vy:0,r:14,active:false}}
+
+function loop(){
+  if(ball.active){
+    ball.vy+=0.35;ball.x+=ball.vx;ball.y+=ball.vy;
+    // rim collision
+    const dx=ball.x-hoop.x,dy=ball.y-hoop.y,dist=Math.hypot(dx,dy);
+    if(dist<hoop.r+ball.r&&ball.y<hoop.y+10&&ball.vy>0){
+      // score!
+      if(Math.abs(dx)<hoop.r-5){
+        score+=1;document.getElementById('score').textContent=score;
+        if(typeof setScore==='function')setScore('basket',score);
+        if(score>rec){rec=score;document.getElementById('rec').textContent=rec}
+        resetBall();
+      }else{ball.vy*=-0.5;ball.vx*=0.8}
+    }
+    if(ball.y>520||ball.x<0||ball.x>400)resetBall();
+  }
+
+  // draw
+  ctx.fillStyle='#2c3e50';ctx.fillRect(0,0,400,500);
+  // backboard
+  ctx.fillStyle='#ddd';ctx.fillRect(170,40,60,8);
+  // hoop
+  ctx.strokeStyle='#e17055';ctx.lineWidth=4;
+  ctx.beginPath();ctx.arc(hoop.x,hoop.y,hoop.r,0,Math.PI*2);ctx.stroke();
+  // net
+  ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1;
+  for(let i=-20;i<=20;i+=10){ctx.beginPath();ctx.moveTo(hoop.x+i,hoop.y);ctx.lineTo(hoop.x+i*0.5,hoop.y+30);ctx.stroke()}
+  // ball
+  ctx.fillStyle='#e17055';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#c0392b';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.stroke();
+
+  if(dragging){
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(ball.x,ball.y);ctx.lineTo(start.x,start.y);ctx.stroke();ctx.setLineDash([]);
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body></html>
