@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Сбор монет — Кибер-склад</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;overflow:hidden;background:#111}
+#ui{position:absolute;top:60px;left:0;right:0;text-align:center;color:#fff;font-size:1.2rem;text-shadow:0 1px 4px #000;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="gheader" style="position:relative;z-index:10">
+  <a href="../index.html" class="back">← Назад</a>
+  <div style="font-weight:700">🪙 3D Сбор монет</div>
+  <div style="width:70px"></div>
+</div>
+<div id="ui">Монеты: <span id="coins">0</span> / 20<br><small>WASD — ходить, мышь — камера</small></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="../auth.js"></script>
+<script>
+let scene,camera,renderer,player,coins=[],clock=new THREE.Clock();
+let score=0,keys={},yaw=0,pitch=0.3;
+
+function init(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x87ceeb);
+  scene.fog=new THREE.Fog(0x87ceeb,40,100);
+  camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,200);
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth,innerHeight-56);
+  renderer.shadowMap.enabled=true;
+  document.body.appendChild(renderer.domElement);
+
+  const light=new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(15,25,10);light.castShadow=true;scene.add(light);
+  scene.add(new THREE.AmbientLight(0x99aabb,0.5));
+
+  // ground
+  const ground=new THREE.Mesh(
+    new THREE.BoxGeometry(60,1,60),
+    new THREE.MeshStandardMaterial({color:0x2ecc71})
+  );
+  ground.position.y=-0.5;ground.receiveShadow=true;scene.add(ground);
+
+  // player
+  player=new THREE.Mesh(
+    new THREE.BoxGeometry(1,1.8,1),
+    new THREE.MeshStandardMaterial({color:0xff6b6b})
+  );
+  player.position.set(0,0.9,0);player.castShadow=true;scene.add(player);
+
+  // coins
+  for(let i=0;i<20;i++){
+    const c=new THREE.Mesh(
+      new THREE.CylinderGeometry(0.4,0.4,0.15,16),
+      new THREE.MeshStandardMaterial({color:0xf1c40f,metalness:0.6,roughness:0.3})
+    );
+    c.rotation.x=Math.PI/2;
+    c.position.set((Math.random()-0.5)*40,0.5,(Math.random()-0.5)*40);
+    c.castShadow=true;
+    scene.add(c);coins.push(c);
+  }
+
+  // some boxes for decoration
+  for(let i=0;i<12;i++){
+    const b=new THREE.Mesh(
+      new THREE.BoxGeometry(1+Math.random()*2,1+Math.random()*3,1+Math.random()*2),
+      new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),0.5,0.5)})
+    );
+    b.position.set((Math.random()-0.5)*45,b.geometry.parameters.height/2,(Math.random()-0.5)*45);
+    b.castShadow=true;scene.add(b);
+  }
+
+  document.addEventListener('keydown',e=>keys[e.code]=true);
+  document.addEventListener('keyup',e=>keys[e.code]=false);
+  document.addEventListener('mousemove',e=>{
+    if(document.pointerLockElement===renderer.domElement){
+      yaw-=e.movementX*0.002;
+      pitch=Math.max(-0.2,Math.min(0.8,pitch-e.movementY*0.002));
+    }
+  });
+  renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock());
+  window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/(innerHeight-56);
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight-56);
+  });
+}
+
+function update(dt){
+  const spd=8;
+  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  if(keys['KeyW']||keys['ArrowUp'])player.position.addScaledVector(forward,spd*dt);
+  if(keys['KeyS']||keys['ArrowDown'])player.position.addScaledVector(forward,-spd*dt);
+  if(keys['KeyA']||keys['ArrowLeft'])player.position.addScaledVector(right,-spd*dt);
+  if(keys['KeyD']||keys['ArrowRight'])player.position.addScaledVector(right,spd*dt);
+  player.position.x=Math.max(-28,Math.min(28,player.position.x));
+  player.position.z=Math.max(-28,Math.min(28,player.position.z));
+
+  // collect
+  for(let i=coins.length-1;i>=0;i--){
+    const c=coins[i];
+    c.rotation.z+=dt*3;
+    if(player.position.distanceTo(c.position)<1.5){
+      scene.remove(c);coins.splice(i,1);score++;
+      document.getElementById('coins').textContent=score;
+      if(score>=20){
+        if(typeof setScore==='function')setScore('collect3d',score);
+        setTimeout(()=>alert('🎉 Все монеты собраны!'),200);
+      }
+    }
+  }
+
+  // camera
+  const camDist=7;
+  camera.position.set(
+    player.position.x+Math.sin(yaw)*camDist,
+    player.position.y+3+pitch*4,
+    player.position.z+Math.cos(yaw)*camDist
+  );
+  camera.lookAt(player.position.x,player.position.y+1,player.position.z);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  update(Math.min(clock.getDelta(),0.05));
+  renderer.render(scene,camera);
+}
+init();animate();
+</script>
+</body></html>

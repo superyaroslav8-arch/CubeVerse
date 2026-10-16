@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Obby — Кибер-склад</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;overflow:hidden;background:#111}
+#ui{position:absolute;top:60px;left:0;right:0;text-align:center;color:#fff;font-size:1.1rem;text-shadow:0 1px 4px #000;pointer-events:none}
+#over{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);flex-direction:column;align-items:center;justify-content:center;z-index:20;color:#fff}
+#over.show{display:flex}
+</style>
+</head>
+<body>
+<div class="gheader" style="position:relative;z-index:10">
+  <a href="../index.html" class="back">← Назад</a>
+  <div style="font-weight:700">🧊 3D Obby</div>
+  <div style="width:70px"></div>
+</div>
+<div id="ui">Уровень <span id="lv">1</span> &nbsp;•&nbsp; Дойди до зелёной платформы<br><small>WASD / Стрелки — движение, Пробел — прыжок</small></div>
+<div id="over"><h2 style="color:#00e676;margin-bottom:16px">Уровень пройден!</h2>
+  <button class="play" style="width:auto;padding:12px 28px" onclick="nextLevel()">Дальше</button>
+  <a href="../index.html" class="back" style="margin-top:12px">В каталог</a>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="../auth.js"></script>
+<script>
+let scene,camera,renderer,player,plats=[],clock=new THREE.Clock();
+let velocity=new THREE.Vector3(),onGround=false,keys={},level=1,finished=false;
+
+function init(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x87ceeb);
+  scene.fog=new THREE.Fog(0x87ceeb,20,80);
+  camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,200);
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth,innerHeight-56);
+  renderer.shadowMap.enabled=true;
+  document.body.appendChild(renderer.domElement);
+  renderer.domElement.style.marginTop='0';
+
+  const light=new THREE.DirectionalLight(0xffffff,1.1);
+  light.position.set(10,20,10);light.castShadow=true;
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x8899aa,0.5));
+
+  // player
+  const geo=new THREE.BoxGeometry(1,1.6,1);
+  const mat=new THREE.MeshStandardMaterial({color:0xff6b6b});
+  player=new THREE.Mesh(geo,mat);
+  player.castShadow=true;
+  player.position.set(0,2,0);
+  scene.add(player);
+
+  buildLevel(level);
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/(innerHeight-56);
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight-56);
+  });
+  document.addEventListener('keydown',e=>keys[e.code]=true);
+  document.addEventListener('keyup',e=>keys[e.code]=false);
+}
+
+function buildLevel(n){
+  // clear old
+  plats.forEach(p=>scene.remove(p));
+  plats=[];
+  const colors=[0x2ecc71,0xe74c3c,0x3498db,0xf1c40f,0x9b59b6,0x1abc9c];
+  // start
+  addPlat(0,0,0,6,1,6,0x2ecc71);
+  let x=0,z=-8,y=0;
+  const count=8+Math.min(n,15);
+  for(let i=0;i<count;i++){
+    x+=(Math.random()-0.5)*6;
+    z-=4+Math.random()*3+n*0.1;
+    y+=Math.random()*1.2-0.2+n*0.05;
+    const s=2.5-Math.min(n*0.05,1.2);
+    addPlat(x,y,z,s+Math.random(),0.6,s+Math.random(),colors[i%colors.length]);
+  }
+  // finish
+  addPlat(x,y+1,z-5,4,0.8,4,0x00ff88,true);
+  player.position.set(0,2,0);
+  velocity.set(0,0,0);
+  finished=false;
+  document.getElementById('over').classList.remove('show');
+  document.getElementById('lv').textContent=n;
+}
+
+function addPlat(x,y,z,w,h,d,color,finish=false){
+  const mesh=new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshStandardMaterial({color})
+  );
+  mesh.position.set(x,y,z);
+  mesh.receiveShadow=true;
+  mesh.userData={finish,w,h,d};
+  scene.add(mesh);
+  plats.push(mesh);
+}
+
+function nextLevel(){
+  level++;
+  if(typeof setScore==='function')setScore('obby3d',level);
+  buildLevel(level);
+}
+
+function update(dt){
+  if(finished)return;
+  const speed=8;
+  let mx=0,mz=0;
+  if(keys['KeyA']||keys['ArrowLeft'])mx=-1;
+  if(keys['KeyD']||keys['ArrowRight'])mx=1;
+  if(keys['KeyW']||keys['ArrowUp'])mz=-1;
+  if(keys['KeyS']||keys['ArrowDown'])mz=1;
+  velocity.x=mx*speed;
+  velocity.z=mz*speed;
+  if((keys['Space'])&&onGround){velocity.y=9;onGround=false}
+  velocity.y-=20*dt;
+
+  player.position.x+=velocity.x*dt;
+  player.position.y+=velocity.y*dt;
+  player.position.z+=velocity.z*dt;
+
+  onGround=false;
+  for(const p of plats){
+    const hw=p.userData.w/2,hd=p.userData.d/2,hh=p.userData.h/2;
+    const px=p.position.x,py=p.position.y,pz=p.position.z;
+    if(Math.abs(player.position.x-px)<hw+0.5&&Math.abs(player.position.z-pz)<hd+0.5){
+      const top=py+hh+0.8;
+      if(player.position.y<=top+0.3&&player.position.y>=top-1&&velocity.y<=0){
+        player.position.y=top;velocity.y=0;onGround=true;
+        if(p.userData.finish){finished=true;document.getElementById('over').classList.add('show')}
+      }
+    }
+  }
+  if(player.position.y<-10){
+    player.position.set(0,2,0);velocity.set(0,0,0);
+  }
+  // camera follow
+  camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+6,player.position.z+10),0.08);
+  camera.lookAt(player.position.x,player.position.y+1,player.position.z);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05);
+  update(dt);
+  renderer.render(scene,camera);
+}
+init();
+animate();
+</script>
+</body></html>
