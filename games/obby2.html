@@ -3,120 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sky Obby | CubeVerse</title>
+  <title>Sky Obby — Нексус</title>
   <link rel="stylesheet" href="../styles.css">
   <style>
-    body { overflow: hidden; }
-    #gameCanvas { display: block; margin: 0 auto; background: linear-gradient(#1e3c72, #2a5298); border-radius: 12px; }
-    .hud { position: absolute; top: 80px; left: 20px; font-size: 1.3rem; }
+    body{overflow:hidden;background:#121215}
+    .game-header{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#1a1a1f;border-bottom:1px solid #2a2a32}
+    .back-btn{background:#222228;border:none;color:white;padding:10px 18px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:600}
+    #gameCanvas{display:block;margin:20px auto;background:linear-gradient(#1e3c72,#2a5298);border-radius:12px}
+    .hud{position:absolute;top:80px;left:30px;font-size:1.2rem}
   </style>
 </head>
 <body>
   <div class="game-header">
-    <a href="../index.html" class="back-btn">← Назад</a>
-    <div class="game-title">Sky Obby</div>
+    <a href="../index.html" class="back-btn">← Нексус</a>
+    <div style="font-weight:700;font-size:1.2rem">🏗️ Sky Obby</div>
     <div></div>
   </div>
-
-  <div class="hud">
-    Попытки: <span id="tries">0</span> | Дойди до конца!
-  </div>
-
+  <div class="hud">Попытки: <span id="tries">0</span> | Дойди до конца!</div>
   <canvas id="gameCanvas" width="900" height="500"></canvas>
-
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let player = { x: 40, y: 400, w: 28, h: 36, vy: 0, onGround: false };
-    let platforms = [
-      {x:0,y:450,w:150,h:50},
-      {x:180,y:420,w:80,h:15},
-      {x:300,y:370,w:70,h:15},
-      {x:400,y:320,w:60,h:15},
-      {x:500,y:280,w:70,h:15},
-      {x:600,y:230,w:60,h:15},
-      {x:700,y:180,w:80,h:15},
-      {x:820,y:140,w:80,h:20}
-    ];
-    let tries = 0;
-    let keys = {};
-    let won = false;
-
-    document.addEventListener('keydown', e => keys[e.code] = true);
-    document.addEventListener('keyup', e => keys[e.code] = false);
-
-    function update() {
-      if (won) return;
-      if (keys['ArrowLeft'] || keys['KeyA']) player.x -= 5;
-      if (keys['ArrowRight'] || keys['KeyD']) player.x += 5;
-      if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW']) && player.onGround) {
-        player.vy = -13;
-        player.onGround = false;
-      }
-      player.vy += 0.65;
-      player.y += player.vy;
-
-      player.onGround = false;
-      for (let p of platforms) {
-        if (player.x < p.x+p.w && player.x+player.w > p.x &&
-            player.y < p.y+p.h && player.y+player.h > p.y) {
-          if (player.vy > 0 && player.y + player.h - player.vy <= p.y + 8) {
-            player.y = p.y - player.h;
-            player.vy = 0;
-            player.onGround = true;
-          }
+    const canvas=document.getElementById('gameCanvas');const ctx=canvas.getContext('2d');
+    let player={x:40,y:400,w:28,h:36,vy:0,onGround:false};
+    let platforms=[{x:0,y:450,w:150,h:50},{x:180,y:420,w:80,h:15},{x:300,y:370,w:70,h:15},{x:400,y:320,w:60,h:15},{x:500,y:280,w:70,h:15},{x:600,y:230,w:60,h:15},{x:700,y:180,w:80,h:15},{x:820,y:140,w:80,h:20}];
+    let tries=0,keys={},won=false;
+    document.addEventListener('keydown',e=>keys[e.code]=true);
+    document.addEventListener('keyup',e=>keys[e.code]=false);
+    function update(){
+      if(won)return;
+      if(keys['ArrowLeft']||keys['KeyA'])player.x-=5;if(keys['ArrowRight']||keys['KeyD'])player.x+=5;
+      if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.onGround){player.vy=-13;player.onGround=false;}
+      player.vy+=0.65;player.y+=player.vy;player.onGround=false;
+      for(let p of platforms){
+        if(player.x<p.x+p.w&&player.x+player.w>p.x&&player.y<p.y+p.h&&player.y+player.h>p.y){
+          if(player.vy>0&&player.y+player.h-player.vy<=p.y+8){player.y=p.y-player.h;player.vy=0;player.onGround=true;}
         }
       }
-
-      if (player.y > 520) {
-        tries++;
-        document.getElementById('tries').textContent = tries;
-        player.x = 40; player.y = 400; player.vy = 0;
-      }
-
-      if (player.x > 830 && player.y < 180) {
-        won = true;
-        setTimeout(() => alert('🎉 Победа! Ты прошёл Sky Obby!'), 100);
-      }
-
-      if (player.x < 0) player.x = 0;
-      if (player.x > 872) player.x = 872;
+      if(player.y>520){tries++;document.getElementById('tries').textContent=tries;player.x=40;player.y=400;player.vy=0;}
+      if(player.x>830&&player.y<180){won=true;setTimeout(()=>alert('🎉 Победа! Ты прошёл Sky Obby!'),100);}
+      if(player.x<0)player.x=0;if(player.x>872)player.x=872;
     }
-
-    function draw() {
+    function draw(){
       ctx.clearRect(0,0,900,500);
-      // clouds
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.beginPath(); ctx.arc(100,80,40,0,Math.PI*2); ctx.arc(140,80,50,0,Math.PI*2); ctx.arc(180,80,35,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(600,120,45,0,Math.PI*2); ctx.arc(650,120,55,0,Math.PI*2); ctx.fill();
-
-      // platforms
-      ctx.fillStyle = '#a0e7e5';
-      for (let p of platforms) {
-        ctx.fillRect(p.x, p.y, p.w, p.h);
-        ctx.strokeStyle = '#fff';
-        ctx.strokeRect(p.x, p.y, p.w, p.h);
-      }
-
-      // finish
-      ctx.fillStyle = '#ff0';
-      ctx.fillRect(840, 100, 12, 40);
-      ctx.beginPath();
-      ctx.moveTo(852,100); ctx.lineTo(890,120); ctx.lineTo(852,140); ctx.fill();
-
-      // player
-      ctx.fillStyle = '#ff6b6b';
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(player.x+5, player.y+6, 7, 7);
-      ctx.fillRect(player.x+16, player.y+6, 7, 7);
+      ctx.fillStyle='rgba(255,255,255,0.3)';
+      ctx.beginPath();ctx.arc(100,80,40,0,Math.PI*2);ctx.arc(140,80,50,0,Math.PI*2);ctx.arc(180,80,35,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(600,120,45,0,Math.PI*2);ctx.arc(650,120,55,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#a0e7e5';for(let p of platforms){ctx.fillRect(p.x,p.y,p.w,p.h);ctx.strokeStyle='#fff';ctx.strokeRect(p.x,p.y,p.w,p.h);}
+      ctx.fillStyle='#ff0';ctx.fillRect(840,100,12,40);
+      ctx.beginPath();ctx.moveTo(852,100);ctx.lineTo(890,120);ctx.lineTo(852,140);ctx.fill();
+      ctx.fillStyle='#ff6b6b';ctx.fillRect(player.x,player.y,player.w,player.h);
+      ctx.fillStyle='#fff';ctx.fillRect(player.x+5,player.y+6,7,7);ctx.fillRect(player.x+16,player.y+6,7,7);
     }
-
-    function loop() {
-      update(); draw();
-      requestAnimationFrame(loop);
-    }
-    loop();
+    function loop(){update();draw();requestAnimationFrame(loop);}loop();
   </script>
 </body>
 </html>
