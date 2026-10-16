@@ -1,27 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
   <defs>
-    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ff9d"/>
-      <stop offset="50%" stop-color="#00d4ff"/>
-      <stop offset="100%" stop-color="#7b2cbf"/>
+    <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="40%" stop-color="#00b4ff"/>
+      <stop offset="70%" stop-color="#7b2fff"/>
+      <stop offset="100%" stop-color="#b14dff"/>
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
+    <linearGradient id="faceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1a2f"/>
+      <stop offset="100%" stop-color="#12082a"/>
+    </linearGradient>
+    <filter id="neon" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <!-- Outer ring -->
-  <circle cx="100" cy="100" r="85" fill="none" stroke="url(#neon)" stroke-width="6" filter="url(#glow)" opacity="0.9"/>
-  <!-- Inner cube isometric -->
-  <g filter="url(#glow)" transform="translate(100,100)">
-    <path d="M-40,-25 L0,-50 L40,-25 L0,0 Z" fill="#0a1628" stroke="url(#neon)" stroke-width="3"/>
-    <path d="M-40,-25 L-40,25 L0,50 L0,0 Z" fill="#061018" stroke="url(#neon)" stroke-width="3"/>
-    <path d="M40,-25 L40,25 L0,50 L0,0 Z" fill="#0d1f35" stroke="url(#neon)" stroke-width="3"/>
-    <path d="M-40,-25 L0,-50 L40,-25 L0,0 Z" fill="url(#neon)" opacity="0.25"/>
+
+  <!-- Background tech lines -->
+  <g stroke="#00e5ff" stroke-width="1.5" fill="none" opacity="0.6">
+    <!-- Left circuit -->
+    <path d="M30 140 L80 140 L100 120 L100 80" />
+    <path d="M30 200 L70 200" />
+    <path d="M40 260 L80 260 L100 240" />
+    <circle cx="30" cy="140" r="3" fill="#00e5ff"/>
+    <circle cx="30" cy="200" r="3" fill="#00e5ff"/>
+    <circle cx="40" cy="260" r="3" fill="#00e5ff"/>
+    <!-- Right circuit -->
+    <path d="M370 140 L320 140 L300 120 L300 80" stroke="#b14dff"/>
+    <path d="M370 200 L330 200" stroke="#b14dff"/>
+    <path d="M360 260 L320 260 L300 240" stroke="#b14dff"/>
+    <circle cx="370" cy="140" r="3" fill="#b14dff"/>
+    <circle cx="370" cy="200" r="3" fill="#b14dff"/>
+    <circle cx="360" cy="260" r="3" fill="#b14dff"/>
   </g>
-  <!-- Center core -->
-  <circle cx="100" cy="100" r="12" fill="url(#neon)" filter="url(#glow)"/>
+
+  <!-- Outer hexagonal frame suggestion -->
+  <g stroke="url(#edgeGrad)" stroke-width="1.2" fill="none" opacity="0.35" filter="url(#softGlow)">
+    <path d="M80 100 L120 70 L280 70 L320 100" />
+    <path d="M80 300 L120 330 L280 330 L320 300" />
+  </g>
+
+  <!-- Main isometric cube - hollow frame style -->
+  <g filter="url(#neon)">
+    <!-- Top face (hollow) -->
+    <path d="M200 95 L305 155 L200 215 L95 155 Z" fill="none" stroke="url(#edgeGrad)" stroke-width="10" stroke-linejoin="round"/>
+    
+    <!-- Left face -->
+    <path d="M95 155 L95 265 L200 325 L200 215 Z" fill="url(#faceGrad)" stroke="url(#edgeGrad)" stroke-width="8" stroke-linejoin="round" opacity="0.95"/>
+    
+    <!-- Right face -->
+    <path d="M200 215 L200 325 L305 265 L305 155 Z" fill="url(#faceGrad)" stroke="url(#edgeGrad)" stroke-width="8" stroke-linejoin="round" opacity="0.95"/>
+
+    <!-- Inner structure lines on left face -->
+    <g stroke="#00d4ff" stroke-width="2" opacity="0.5">
+      <path d="M120 180 L180 215" />
+      <path d="M120 210 L180 245" />
+      <path d="M120 240 L170 270" />
+      <path d="M140 170 L140 250" />
+      <path d="M165 185 L165 265" />
+    </g>
+
+    <!-- Inner structure on right face -->
+    <g stroke="#a855ff" stroke-width="2" opacity="0.5">
+      <path d="M220 215 L280 180" />
+      <path d="M220 245 L280 210" />
+      <path d="M230 270 L280 240" />
+      <path d="M240 200 L240 280" />
+      <path d="M265 190 L265 270" />
+    </g>
+
+    <!-- Bright top edges -->
+    <path d="M200 95 L305 155" fill="none" stroke="#00f0ff" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+    <path d="M200 95 L95 155" fill="none" stroke="#00f0ff" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+    <path d="M95 155 L200 215" fill="none" stroke="#00d4ff" stroke-width="5"/>
+    <path d="M305 155 L200 215" fill="none" stroke="#9d4edd" stroke-width="5"/>
+  </g>
+
+  <!-- Extra glow core -->
+  <circle cx="200" cy="200" r="8" fill="#00f0ff" opacity="0.4" filter="url(#softGlow)"/>
 </svg>
