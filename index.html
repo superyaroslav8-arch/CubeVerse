@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Нексус — Игровая платформа</title>
+  <title>Кибер-склад — Игровая платформа</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="logo.svg" alt="Нексус">
-      <h1>Нексус</h1>
+      <img src="logo.svg" alt="Кибер-склад">
+      <h1>Кибер-склад</h1>
     </div>
     <nav class="nav-menu">
       <a href="index.html" class="nav-item active"><span class="icon">🏠</span><span>Главная</span></a>
@@ -33,7 +32,6 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div class="search-box">
@@ -46,19 +44,15 @@
     </div>
 
     <div class="content">
-      <!-- Рекомендуемые -->
       <div class="section-title">🔥 Рекомендуемые <span>лучшие игры прямо сейчас</span></div>
       <div class="games-row" id="featuredGames"></div>
 
-      <!-- Популярные -->
       <div class="section-title">⭐ Популярные</div>
       <div class="games-row" id="popularGames"></div>
 
-      <!-- Новые -->
       <div class="section-title">🆕 Новые и опубликованные</div>
       <div class="games-row" id="newGames"></div>
 
-      <!-- Мои опубликованные (если есть) -->
       <div id="myPublishedSection" style="display:none">
         <div class="section-title">📌 Мои опубликованные игры</div>
         <div class="games-row" id="myPublishedGames"></div>
@@ -68,7 +62,6 @@
 
   <script src="app.js"></script>
   <script>
-    // Загрузка игр на главную
     document.addEventListener('DOMContentLoaded', () => {
       loadUser();
       renderCatalog();
