@@ -2,15 +2,16 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Obby Adventure — 100 уровней</title>
+<title>Obby Adventure — 100 разных уровней</title>
 <link rel="stylesheet" href="../styles.css">
 <style>
 body{overflow:hidden;background:#111216}
-#c{display:block;margin:12px auto;background:#1a1a2e;border-radius:12px;max-width:100%}
+#c{display:block;margin:12px auto;border-radius:12px;max-width:100%}
 .hud{text-align:center;padding:8px;font-size:1.1rem;color:#b0b0be}
-.win{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);flex-direction:column;align-items:center;justify-content:center;z-index:50}
+.win{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);flex-direction:column;align-items:center;justify-content:center;z-index:50}
 .win.show{display:flex}
-.win h2{color:#00e676;font-size:1.8rem;margin:10px 0 18px}
+.win h2{color:#00e676;font-size:1.7rem;margin:10px 0 16px}
+.theme{font-size:.9rem;opacity:.8;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -19,46 +20,83 @@ body{overflow:hidden;background:#111216}
   <div style="font-weight:700">🏃 Obby Adventure</div>
   <div style="width:70px"></div>
 </div>
-<div class="hud">Уровень <span id="lv">1</span> / 100 &nbsp;•&nbsp; Попытки: <span id="tr">0</span></div>
+<div class="hud">
+  <div class="theme" id="theme">Тема: Трава</div>
+  Уровень <span id="lv">1</span> / 100 &nbsp;•&nbsp; Попытки: <span id="tr">0</span>
+</div>
 <canvas id="c" width="900" height="480"></canvas>
 <div class="win" id="win">
-  <div style="font-size:3.5rem">🎉</div>
+  <div style="font-size:3.2rem">🎉</div>
   <h2 id="wt">Уровень пройден!</h2>
-  <button class="play" style="width:auto;padding:12px 28px;font-size:1rem" onclick="next()">Дальше</button>
+  <button class="play" style="width:auto;padding:12px 28px;font-size:1rem" onclick="next()">Следующий уровень</button>
   <a href="../index.html" class="back" style="margin-top:12px">В каталог</a>
 </div>
 <script src="../auth.js"></script>
 <script>
 const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
-let player={x:40,y:380,w:26,h:34,vy:0,on:false},plats=[],lv=1,tries=0,keys={},done=false;
+let player={x:40,y:380,w:26,h:34,vy:0,on:false},plats=[],hazards=[],lv=1,tries=0,keys={},done=false;
+let bgColor='#1a1a2e', platColor='#00c853', accent='#00e676';
 
-// Процедурная генерация 100 уровней
+const THEMES=[
+  {name:'Трава', bg:'#1a2e1a', plat:'#2ecc71', acc:'#27ae60', sky:'#87CEEB'},
+  {name:'Огонь', bg:'#2e1a1a', plat:'#e74c3c', acc:'#c0392b', sky:'#4a2020'},
+  {name:'Лёд', bg:'#1a2a3e', plat:'#74b9ff', acc:'#0984e3', sky:'#dfe6e9'},
+  {name:'Космос', bg:'#0d0d1a', plat:'#a29bfe', acc:'#6c5ce7', sky:'#000011'},
+  {name:'Пустыня', bg:'#3e2e1a', plat:'#f39c12', acc:'#e67e22', sky:'#f5cba7'},
+  {name:'Неон', bg:'#0a0a12', plat:'#00f2fe', acc:'#00d4ff', sky:'#0a0a18'},
+  {name:'Тьма', bg:'#111', plat:'#636e72', acc:'#2d3436', sky:'#1a1a1a'},
+  {name:'Радуга', bg:'#1a1a2e', plat:'#fd79a8', acc:'#e84393', sky:'#2d1b4e'},
+  {name:'Золото', bg:'#2e2a1a', plat:'#f1c40f', acc:'#f39c12', sky:'#3d3a20'},
+  {name:'Кристалл', bg:'#1a1a2e', plat:'#00cec9', acc:'#00b894', sky:'#0a2a2a'}
+];
+
+function getTheme(n){return THEMES[Math.floor((n-1)/10)%THEMES.length]}
+
 function genLevel(n){
-  const list=[{x:0,y:430,w:120,h:50}];
-  let x=140,y=400;
-  const count=6+Math.min(n,20); // больше платформ на высоких уровнях
-  const gapBase=70+Math.min(n*1.5,50);
-  const wBase=Math.max(70-n*0.4,28);
+  const theme=getTheme(n);
+  bgColor=theme.bg; platColor=theme.plat; accent=theme.acc;
+  document.getElementById('theme').textContent='Тема: '+theme.name;
+  canvas.style.background=theme.sky||theme.bg;
+
+  const list=[{x:0,y:430,w:130,h:50}];
+  hazards=[];
+  let x=150, y=400;
+  const count=6+Math.min(Math.floor(n/3),18);
+  const style=n%5; // 5 разных стилей раскладки
+
   for(let i=0;i<count;i++){
-    const w=wBase+Math.random()*20-n*0.1;
-    const gap=gapBase+Math.random()*30;
+    let w, gap, dy;
+    if(style===0){ // ступеньки вверх
+      w=Math.max(28,70-n*0.3); gap=70+n*0.8; dy=-(22+n*0.4);
+    }else if(style===1){ // зигзаг
+      w=Math.max(26,60-n*0.25); gap=90+n; dy=(i%2===0?-30:15)-n*0.2;
+    }else if(style===2){ // длинные прыжки
+      w=Math.max(24,50-n*0.2); gap=100+n*1.2; dy=-(15+Math.random()*20);
+    }else if(style===3){ // узкие платформы
+      w=Math.max(20,40-n*0.15); gap=65+n*0.5; dy=-(20+n*0.3);
+    }else{ // хаотичный
+      w=Math.max(22,55-n*0.2+Math.random()*20); gap=60+Math.random()*50+n*0.5; dy=-(10+Math.random()*30+n*0.2);
+    }
     x+=gap;
-    y-=20+Math.random()*25+n*0.3;
-    if(y<60)y=60+Math.random()*40;
-    // иногда назад (сложность)
-    if(n>15&&Math.random()<0.25) x-=gap*0.7;
-    list.push({x,y,w:Math.max(22,w),h:12+Math.random()*4});
+    y+=dy;
+    if(y<50)y=50+Math.random()*40;
+    if(y>400)y=350;
+    if(n>12&&Math.random()<0.2)x-=gap*0.5;
+    list.push({x,y,w,h:12});
+
+    // шипы / опасность на высоких уровнях
+    if(n>8&&Math.random()<0.15+n*0.005){
+      hazards.push({x:x+10,y:y-14,w:w-20,h:10});
+    }
   }
-  // финиш
-  list.push({x:x+80,y:Math.max(50,y-30),w:50,h:14});
+  list.push({x:x+90,y:Math.max(40,y-30),w:55,h:14,finish:true});
   return list;
 }
 
 function load(){
-  // сохранение прогресса
   if(typeof getScore==='function'){
-    const saved=getScore('obby_lv')||1;
-    if(lv===1&&saved>1) lv=Math.min(saved,100);
+    const s=getScore('obby_lv')||1;
+    if(lv===1&&s>1)lv=Math.min(s,100);
   }
   plats=genLevel(lv);
   player={x:30,y:380,w:26,h:34,vy:0,on:false};
@@ -67,10 +105,8 @@ function load(){
   document.getElementById('lv').textContent=lv;
 }
 function next(){
-  if(lv>=100){
-    alert('🏆 Все 100 уровней пройдены! Ты легенда!');
-    lv=1;tries=0;document.getElementById('tr').textContent=0;
-  }else lv++;
+  if(lv>=100){alert('🏆 Все 100 уровней пройдены!');lv=1;tries=0;document.getElementById('tr').textContent=0}
+  else lv++;
   if(typeof setScore==='function')setScore('obby_lv',lv);
   load();
 }
@@ -81,37 +117,48 @@ document.addEventListener('keyup',e=>keys[e.code]=false);
 
 function update(){
   if(done)return;
-  if(keys['ArrowLeft']||keys['KeyA'])player.x-=5;
-  if(keys['ArrowRight']||keys['KeyD'])player.x+=5;
-  if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.on){player.vy=-13.2;player.on=false}
-  player.vy+=0.62;player.y+=player.vy;player.on=false;
+  if(keys['ArrowLeft']||keys['KeyA'])player.x-=5.2;
+  if(keys['ArrowRight']||keys['KeyD'])player.x+=5.2;
+  if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.on){player.vy=-13.5;player.on=false}
+  player.vy+=0.64;player.y+=player.vy;player.on=false;
+
   for(const p of plats){
     if(player.x<p.x+p.w&&player.x+player.w>p.x&&player.y<p.y+p.h&&player.y+player.h>p.y){
-      if(player.vy>0&&player.y+player.h-player.vy<=p.y+6){player.y=p.y-player.h;player.vy=0;player.on=true}
+      if(player.vy>0&&player.y+player.h-player.vy<=p.y+6){
+        player.y=p.y-player.h;player.vy=0;player.on=true;
+        if(p.finish){done=true;document.getElementById('wt').textContent=lv>=100?'Все 100 уровней!':'Уровень '+lv+' пройден!';document.getElementById('win').classList.add('show')}
+      }
+    }
+  }
+  for(const h of hazards){
+    if(player.x<h.x+h.w&&player.x+player.w>h.x&&player.y<h.y+h.h&&player.y+player.h>h.y){
+      tries++;document.getElementById('tr').textContent=tries;
+      player.x=30;player.y=380;player.vy=0;
     }
   }
   if(player.y>520){tries++;document.getElementById('tr').textContent=tries;player.x=30;player.y=380;player.vy=0}
-  const last=plats[plats.length-1];
-  if(player.x>last.x&&player.y<last.y+40){
-    done=true;
-    document.getElementById('wt').textContent=lv>=100?'Все 100 уровней пройдены!':'Уровень '+lv+' пройден!';
-    document.getElementById('win').classList.add('show');
-  }
   if(player.x<0)player.x=0;if(player.x>874)player.x=874;
 }
+
 function draw(){
-  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,900,480);
+  ctx.fillStyle=bgColor;ctx.fillRect(0,0,900,480);
   // platforms
-  const hue=120+lv*2;
-  ctx.fillStyle=`hsl(${hue},70%,45%)`;
   for(const p of plats){
+    ctx.fillStyle=p.finish?'#00ff88':platColor;
     ctx.fillRect(p.x,p.y,p.w,p.h);
-    ctx.strokeStyle=`hsl(${hue},80%,65%)`;ctx.lineWidth=2;ctx.strokeRect(p.x,p.y,p.w,p.h);
+    ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.strokeRect(p.x,p.y,p.w,p.h);
+  }
+  // hazards
+  ctx.fillStyle='#ff3333';
+  for(const h of hazards){
+    ctx.beginPath();
+    ctx.moveTo(h.x,h.y+h.h);ctx.lineTo(h.x+h.w/2,h.y);ctx.lineTo(h.x+h.w,h.y+h.h);ctx.fill();
   }
   // flag
   const f=plats[plats.length-1];
-  ctx.fillStyle='#00ff88';ctx.fillRect(f.x+f.w/2-3,f.y-36,7,36);
-  ctx.beginPath();ctx.moveTo(f.x+f.w/2+4,f.y-36);ctx.lineTo(f.x+f.w/2+26,f.y-24);ctx.lineTo(f.x+f.w/2+4,f.y-12);ctx.fill();
+  ctx.fillStyle='#fff';ctx.fillRect(f.x+f.w/2-2,f.y-38,6,38);
+  ctx.fillStyle='#00ff88';
+  ctx.beginPath();ctx.moveTo(f.x+f.w/2+4,f.y-38);ctx.lineTo(f.x+f.w/2+28,f.y-26);ctx.lineTo(f.x+f.w/2+4,f.y-14);ctx.fill();
   // player
   ctx.fillStyle='#ff6b6b';ctx.fillRect(player.x,player.y,player.w,player.h);
   ctx.fillStyle='#fff';ctx.fillRect(player.x+5,player.y+6,6,6);ctx.fillRect(player.x+15,player.y+6,6,6);
