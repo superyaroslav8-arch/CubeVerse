@@ -19,11 +19,13 @@
       <span style="opacity:0.5">🔍</span>
       <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames()">
     </div>
+
+    <div class="header-right" id="authArea">
+      <!-- заполняется через JS -->
+    </div>
   </header>
 
   <div class="container">
-
-    <!-- Рекомендуемые -->
     <section class="section">
       <div class="section-header">
         <h2>🔥 Рекомендуемые</h2>
@@ -32,7 +34,6 @@
       <div class="games-grid" id="featuredGames"></div>
     </section>
 
-    <!-- Популярные -->
     <section class="section">
       <div class="section-header">
         <h2>⭐ Популярные</h2>
@@ -40,109 +41,67 @@
       <div class="games-grid" id="popularGames"></div>
     </section>
 
-    <!-- Все игры -->
     <section class="section">
       <div class="section-header">
         <h2>🎮 Все игры</h2>
       </div>
       <div class="games-grid" id="allGames"></div>
     </section>
-
   </div>
 
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <h2 id="modalTitle">Вход</h2>
+      <p class="subtitle" id="modalSubtitle">Войди в свой аккаунт</p>
+      <div class="error" id="authError"></div>
+
+      <div id="loginForm">
+        <label>Логин</label>
+        <input type="text" id="loginName" placeholder="Твой логин" maxlength="20">
+        <label>Пароль</label>
+        <input type="password" id="loginPass" placeholder="Пароль" maxlength="30">
+        <button class="btn btn-primary btn-full" onclick="doLogin()">Войти</button>
+        <div class="switch">Нет аккаунта? <a onclick="showRegister()">Зарегистрироваться</a></div>
+      </div>
+
+      <div id="registerForm" style="display:none">
+        <label>Логин</label>
+        <input type="text" id="regName" placeholder="Придумай логин" maxlength="20">
+        <label>Пароль</label>
+        <input type="password" id="regPass" placeholder="Придумай пароль" maxlength="30">
+        <label>Повтори пароль</label>
+        <input type="password" id="regPass2" placeholder="Повтори пароль" maxlength="30">
+        <button class="btn btn-primary btn-full" onclick="doRegister()">Создать аккаунт</button>
+        <div class="switch">Уже есть аккаунт? <a onclick="showLogin()">Войти</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
   <script>
     const GAMES = [
-      {
-        id: 'obby',
-        name: 'Obby Adventure',
-        desc: 'Пройди сложные препятствия и доберись до финиша!',
-        emoji: '🏃',
-        color: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
-        players: 1247,
-        rating: 4.8,
-        file: 'games/obby.html'
-      },
-      {
-        id: 'tycoon',
-        name: 'Click Tycoon',
-        desc: 'Зарабатывай монеты, покупай улучшения и стань самым богатым!',
-        emoji: '💰',
-        color: 'linear-gradient(135deg, #f9ca24, #f0932b)',
-        players: 892,
-        rating: 4.6,
-        file: 'games/tycoon.html'
-      },
-      {
-        id: 'racing',
-        name: 'Speed Race',
-        desc: 'Гонки на скорость. Обгони всех и приди первым!',
-        emoji: '🏎️',
-        color: 'linear-gradient(135deg, #4834d4, #686de0)',
-        players: 654,
-        rating: 4.5,
-        file: 'games/racing.html'
-      },
-      {
-        id: 'hangout',
-        name: 'Hangout Plaza',
-        desc: 'Гуляй, общайся и танцуй вместе с другими игроками!',
-        emoji: '👫',
-        color: 'linear-gradient(135deg, #6ab04c, #badc58)',
-        players: 2103,
-        rating: 4.9,
-        file: 'games/hangout.html'
-      },
-      {
-        id: 'pets',
-        name: 'Pet Simulator',
-        desc: 'Собирай питомцев, качай их и становись легендой!',
-        emoji: '🐶',
-        color: 'linear-gradient(135deg, #eb4d4b, #ff7979)',
-        players: 1789,
-        rating: 4.7,
-        file: 'games/pets.html'
-      },
-      {
-        id: 'obby2',
-        name: 'Sky Obby',
-        desc: 'Сложный паркур в небесах. Сможешь пройти до конца?',
-        emoji: '🏗️',
-        color: 'linear-gradient(135deg, #22a6b3, #7ed6df)',
-        players: 543,
-        rating: 4.4,
-        file: 'games/obby2.html'
-      },
-      {
-        id: 'parkour',
-        name: 'Extreme Parkour',
-        desc: 'Самый сложный паркур. Только для настоящих профи!',
-        emoji: '🧗',
-        color: 'linear-gradient(135deg, #e17055, #d63031)',
-        players: 321,
-        rating: 4.3,
-        file: 'games/obby.html'
-      },
-      {
-        id: 'farm',
-        name: 'Ферма Кликер',
-        desc: 'Выращивай урожай, продавай и расширяй свою ферму.',
-        emoji: '🌾',
-        color: 'linear-gradient(135deg, #00b894, #55efc4)',
-        players: 876,
-        rating: 4.5,
-        file: 'games/tycoon.html'
-      }
+      { id:'obby', name:'Obby Adventure', desc:'Пройди сложные препятствия и доберись до финиша! Много уровней.', emoji:'🏃', color:'linear-gradient(135deg,#ff6b6b,#ee5a24)', players:1247, file:'games/obby.html' },
+      { id:'tycoon', name:'Click Tycoon', desc:'Зарабатывай монеты, покупай улучшения и стань самым богатым!', emoji:'💰', color:'linear-gradient(135deg,#f9ca24,#f0932b)', players:892, file:'games/tycoon.html' },
+      { id:'racing', name:'Speed Race', desc:'Гонки на скорость. Обгони всех и приди первым!', emoji:'🏎️', color:'linear-gradient(135deg,#4834d4,#686de0)', players:654, file:'games/racing.html' },
+      { id:'hangout', name:'Hangout Plaza', desc:'Гуляй, общайся и танцуй вместе с другими игроками!', emoji:'👫', color:'linear-gradient(135deg,#6ab04c,#badc58)', players:2103, file:'games/hangout.html' },
+      { id:'pets', name:'Pet Simulator', desc:'Собирай питомцев, качай их и становись легендой!', emoji:'🐶', color:'linear-gradient(135deg,#eb4d4b,#ff7979)', players:1789, file:'games/pets.html' },
+      { id:'obby2', name:'Sky Obby', desc:'Сложный паркур в небесах. Много уровней и ловушек!', emoji:'🏗️', color:'linear-gradient(135deg,#22a6b3,#7ed6df)', players:543, file:'games/obby2.html' },
+      { id:'snake', name:'Змейка', desc:'Классическая змейка. Собирай еду и расти!', emoji:'🐍', color:'linear-gradient(135deg,#00b894,#55efc4)', players:1102, file:'games/snake.html' },
+      { id:'flappy', name:'Flappy Cube', desc:'Летай между трубами и не врежься!', emoji:'📦', color:'linear-gradient(135deg,#fd79a8,#e84393)', players:876, file:'games/flappy.html' },
+      { id:'memory', name:'Мемори', desc:'Найди все пары карточек. Тренируй память!', emoji:'🧠', color:'linear-gradient(135deg,#a29bfe,#6c5ce7)', players:654, file:'games/memory.html' },
+      { id:'breakout', name:'Арканоид', desc:'Разбей все блоки платформой и шариком!', emoji:'🧱', color:'linear-gradient(135deg,#fdcb6e,#e17055)', players:721, file:'games/breakout.html' },
+      { id:'dodge', name:'Уворот', desc:'Уворачивайся от падающих блоков как можно дольше!', emoji:'⚡', color:'linear-gradient(135deg,#74b9ff,#0984e3)', players:498, file:'games/dodge.html' },
+      { id:'2048', name:'2048', desc:'Соединяй одинаковые плитки и набери 2048!', emoji:'🔢', color:'linear-gradient(135deg,#ffeaa7,#fdcb6e)', players:1340, file:'games/game2048.html' }
     ];
 
     function renderGames(containerId, games) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
-
       games.forEach(g => {
         const card = document.createElement('div');
         card.className = 'game-card';
         card.onclick = () => location.href = g.file;
-
         card.innerHTML = `
           <div class="game-thumb" style="background:${g.color}">
             ${g.emoji}
@@ -152,7 +111,6 @@
             <h3>${g.name}</h3>
             <p>${g.desc}</p>
             <div class="game-footer">
-              <div class="rating">⭐ ${g.rating}</div>
               <button class="play-btn" onclick="event.stopPropagation(); location.href='${g.file}'">Играть</button>
             </div>
           </div>
@@ -170,10 +128,12 @@
       });
     }
 
-    // Рендер
     renderGames('featuredGames', GAMES.slice(0, 4));
-    renderGames('popularGames', GAMES.slice(2, 6));
+    renderGames('popularGames', GAMES.slice(3, 8));
     renderGames('allGames', GAMES);
+
+    // Auth UI
+    updateAuthUI();
   </script>
 </body>
 </html>
