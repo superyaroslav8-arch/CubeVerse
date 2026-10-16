@@ -1,32 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f2fe"/>
-      <stop offset="50%" stop-color="#4facfe"/>
-      <stop offset="100%" stop-color="#00c6fb"/>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ff9d"/>
+      <stop offset="50%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#7b2cbf"/>
     </linearGradient>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge>
-        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
   </defs>
-  <!-- Cube -->
-  <g filter="url(#glow)">
-    <!-- Back face -->
-    <path d="M50 70 L100 40 L150 70 L100 100 Z" fill="#1a1a4e" stroke="url(#g)" stroke-width="3"/>
-    <!-- Left face -->
-    <path d="M50 70 L50 130 L100 160 L100 100 Z" fill="#0d1b3d" stroke="url(#g)" stroke-width="3"/>
-    <!-- Right face -->
-    <path d="M150 70 L150 130 L100 160 L100 100 Z" fill="#152a5c" stroke="url(#g)" stroke-width="3"/>
-    <!-- Top highlight -->
-    <path d="M50 70 L100 40 L150 70 L100 100 Z" fill="url(#g)" opacity="0.3"/>
+  <!-- Outer ring -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="url(#neon)" stroke-width="6" filter="url(#glow)" opacity="0.9"/>
+  <!-- Inner cube isometric -->
+  <g filter="url(#glow)" transform="translate(100,100)">
+    <path d="M-40,-25 L0,-50 L40,-25 L0,0 Z" fill="#0a1628" stroke="url(#neon)" stroke-width="3"/>
+    <path d="M-40,-25 L-40,25 L0,50 L0,0 Z" fill="#061018" stroke="url(#neon)" stroke-width="3"/>
+    <path d="M40,-25 L40,25 L0,50 L0,0 Z" fill="#0d1f35" stroke="url(#neon)" stroke-width="3"/>
+    <path d="M-40,-25 L0,-50 L40,-25 L0,0 Z" fill="url(#neon)" opacity="0.25"/>
   </g>
-  <!-- Stars / particles -->
-  <circle cx="40" cy="50" r="3" fill="#00f2fe" opacity="0.8"/>
-  <circle cx="160" cy="45" r="2.5" fill="#4facfe" opacity="0.9"/>
-  <circle cx="30" cy="140" r="2" fill="#00c6fb"/>
-  <circle cx="170" cy="150" r="3" fill="#00f2fe" opacity="0.7"/>
+  <!-- Center core -->
+  <circle cx="100" cy="100" r="12" fill="url(#neon)" filter="url(#glow)"/>
 </svg>
