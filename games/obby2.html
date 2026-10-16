@@ -9,6 +9,8 @@
     body { overflow: hidden; background: #0d0d12; }
     #gameCanvas { display: block; margin: 16px auto; background: linear-gradient(#1e3c72, #2a5298); border-radius: 16px; max-width: 100%; }
     .hud { text-align: center; padding: 10px; font-size: 1.1rem; color: #a0a0b0; }
+    .win-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+    .win-screen.show { display: flex; }
   </style>
 </head>
 <body>
@@ -17,38 +19,57 @@
     <div style="font-weight:700">🏗️ Sky Obby</div>
     <div style="width:90px"></div>
   </div>
-
-  <div class="hud">Попытки: <span id="tries">0</span> &nbsp;•&nbsp; Дойди до флага!</div>
+  <div class="hud">Уровень: <span id="level">1</span>/5 &nbsp;•&nbsp; Попытки: <span id="tries">0</span></div>
   <canvas id="gameCanvas" width="900" height="480"></canvas>
-
+  <div class="win-screen" id="winScreen">
+    <div style="font-size:4rem">🎉</div>
+    <h2 style="color:#00e676;margin:12px 0 20px" id="winText">Уровень пройден!</h2>
+    <button class="play-btn" style="padding:14px 32px;font-size:1.1rem" onclick="nextLevel()">Дальше</button>
+    <a href="../index.html" class="back-btn" style="margin-top:14px">В каталог</a>
+  </div>
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let player = { x: 40, y: 380, w: 28, h: 36, vy: 0, onGround: false };
-    let platforms = [
-      {x:0,y:430,w:150,h:50}, {x:180,y:400,w:80,h:14}, {x:300,y:350,w:70,h:14},
-      {x:400,y:300,w:60,h:14}, {x:500,y:260,w:70,h:14}, {x:600,y:210,w:60,h:14},
-      {x:700,y:160,w:80,h:14}, {x:820,y:120,w:80,h:18}
-    ];
-    let tries = 0, keys = {}, won = false;
+    const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d');
+    let player = { x:40, y:380, w:26, h:34, vy:0, onGround:false };
+    let platforms = [], level = 1, tries = 0, keys = {}, finished = false;
 
+    const LEVELS = [
+      [{x:0,y:430,w:140,h:50},{x:190,y:390,w:80,h:14},{x:320,y:340,w:70,h:14},{x:450,y:290,w:70,h:14},{x:580,y:240,w:70,h:14},{x:720,y:190,w:80,h:14},{x:850,y:140,w:50,h:14}],
+      [{x:0,y:430,w:100,h:50},{x:160,y:400,w:50,h:12},{x:270,y:360,w:50,h:12},{x:170,y:310,w:50,h:12},{x:300,y:270,w:50,h:12},{x:420,y:230,w:50,h:12},{x:540,y:190,w:50,h:12},{x:670,y:150,w:50,h:12},{x:800,y:110,w:60,h:14}],
+      [{x:0,y:430,w:80,h:50},{x:140,y:400,w:40,h:11},{x:240,y:360,w:40,h:11},{x:140,y:320,w:40,h:11},{x:260,y:280,w:40,h:11},{x:160,y:240,w:40,h:11},{x:290,y:200,w:40,h:11},{x:420,y:180,w:50,h:11},{x:560,y:150,w:40,h:11},{x:690,y:120,w:40,h:11},{x:820,y:90,w:50,h:12}],
+      [{x:0,y:430,w:70,h:50},{x:130,y:400,w:35,h:10},{x:230,y:370,w:35,h:10},{x:130,y:330,w:35,h:10},{x:250,y:300,w:35,h:10},{x:150,y:260,w:35,h:10},{x:280,y:230,w:35,h:10},{x:180,y:190,w:35,h:10},{x:320,y:160,w:40,h:10},{x:450,y:140,w:40,h:10},{x:580,y:160,w:40,h:10},{x:710,y:130,w:40,h:10},{x:840,y:100,w:50,h:12}],
+      [{x:0,y:430,w:60,h:50},{x:120,y:405,w:30,h:9},{x:210,y:375,w:30,h:9},{x:120,y:340,w:30,h:9},{x:230,y:310,w:30,h:9},{x:130,y:275,w:30,h:9},{x:250,y:245,w:30,h:9},{x:150,y:210,w:30,h:9},{x:280,y:180,w:30,h:9},{x:190,y:150,w:30,h:9},{x:330,y:130,w:35,h:9},{x:450,y:150,w:35,h:9},{x:570,y:120,w:35,h:9},{x:700,y:100,w:35,h:9},{x:830,y:80,w:50,h:12}]
+    ];
+
+    function loadLevel() {
+      platforms = LEVELS[Math.min(level-1, LEVELS.length-1)].map(p => ({...p}));
+      player.x = 30; player.y = 380; player.vy = 0; finished = false;
+      document.getElementById('winScreen').classList.remove('show');
+      document.getElementById('level').textContent = level;
+    }
+
+    function nextLevel() {
+      if (level >= LEVELS.length) {
+        alert('🏆 Все 5 уровней Sky Obby пройдены!');
+        level = 1; tries = 0; document.getElementById('tries').textContent = 0;
+      } else level++;
+      loadLevel();
+    }
+
+    loadLevel();
     document.addEventListener('keydown', e => keys[e.code] = true);
     document.addEventListener('keyup', e => keys[e.code] = false);
 
     function update() {
-      if (won) return;
-      if (keys['ArrowLeft'] || keys['KeyA']) player.x -= 5;
-      if (keys['ArrowRight'] || keys['KeyD']) player.x += 5;
-      if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW']) && player.onGround) {
-        player.vy = -13; player.onGround = false;
-      }
-      player.vy += 0.65; player.y += player.vy;
+      if (finished) return;
+      if (keys['ArrowLeft']||keys['KeyA']) player.x -= 5;
+      if (keys['ArrowRight']||keys['KeyD']) player.x += 5;
+      if ((keys['Space']||keys['ArrowUp']||keys['KeyW']) && player.onGround) { player.vy = -13; player.onGround = false; }
+      player.vy += 0.6; player.y += player.vy;
       player.onGround = false;
 
       for (let p of platforms) {
-        if (player.x < p.x + p.w && player.x + player.w > p.x &&
-            player.y < p.y + p.h && player.y + player.h > p.y) {
-          if (player.vy > 0 && player.y + player.h - player.vy <= p.y + 8) {
+        if (player.x < p.x+p.w && player.x+player.w > p.x && player.y < p.y+p.h && player.y+player.h > p.y) {
+          if (player.vy > 0 && player.y+player.h-player.vy <= p.y+6) {
             player.y = p.y - player.h; player.vy = 0; player.onGround = true;
           }
         }
@@ -56,22 +77,24 @@
 
       if (player.y > 500) {
         tries++; document.getElementById('tries').textContent = tries;
-        player.x = 40; player.y = 380; player.vy = 0;
+        player.x = 30; player.y = 380; player.vy = 0;
       }
-      if (player.x > 830 && player.y < 160) {
-        won = true;
-        setTimeout(() => alert('🎉 Победа! Ты прошёл Sky Obby!'), 100);
+
+      const last = platforms[platforms.length-1];
+      if (player.x > last.x && player.y < last.y + 30) {
+        finished = true;
+        document.getElementById('winText').textContent = level >= LEVELS.length ? 'Все уровни пройдены!' : 'Уровень пройден!';
+        document.getElementById('winScreen').classList.add('show');
       }
       if (player.x < 0) player.x = 0;
-      if (player.x > 872) player.x = 872;
+      if (player.x > 874) player.x = 874;
     }
 
     function draw() {
-      ctx.clearRect(0, 0, 900, 480);
-      // clouds
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.beginPath(); ctx.arc(100,70,40,0,Math.PI*2); ctx.arc(140,70,50,0,Math.PI*2); ctx.arc(180,70,35,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(600,100,45,0,Math.PI*2); ctx.arc(650,100,55,0,Math.PI*2); ctx.fill();
+      ctx.clearRect(0,0,900,480);
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.beginPath(); ctx.arc(100,60,35,0,Math.PI*2); ctx.arc(135,60,45,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(600,90,40,0,Math.PI*2); ctx.arc(645,90,50,0,Math.PI*2); ctx.fill();
 
       ctx.fillStyle = '#a0e7e5';
       for (let p of platforms) {
@@ -79,13 +102,12 @@
         ctx.strokeStyle = '#fff'; ctx.strokeRect(p.x, p.y, p.w, p.h);
       }
 
-      // flag
-      ctx.fillStyle = '#ff0'; ctx.fillRect(840, 80, 12, 40);
-      ctx.beginPath(); ctx.moveTo(852,80); ctx.lineTo(890,100); ctx.lineTo(852,120); ctx.fill();
+      const last = platforms[platforms.length-1];
+      ctx.fillStyle = '#ff0'; ctx.fillRect(last.x+last.w/2-3, last.y-36, 8, 36);
+      ctx.beginPath(); ctx.moveTo(last.x+last.w/2+5, last.y-36); ctx.lineTo(last.x+last.w/2+28, last.y-24); ctx.lineTo(last.x+last.w/2+5, last.y-12); ctx.fill();
 
-      // player
       ctx.fillStyle = '#ff6b6b'; ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = '#fff'; ctx.fillRect(player.x+5, player.y+6, 7, 7); ctx.fillRect(player.x+16, player.y+6, 7, 7);
+      ctx.fillStyle = '#fff'; ctx.fillRect(player.x+4, player.y+6, 6, 6); ctx.fillRect(player.x+15, player.y+6, 6, 6);
     }
 
     function loop() { update(); draw(); requestAnimationFrame(loop); }
