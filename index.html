@@ -3,94 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Кибер-склад — Игровая платформа</title>
+  <title>Кибер-склад — Игры</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sidebar-logo">
+
+  <header class="header">
+    <a href="index.html" class="logo-link">
       <img src="logo.svg" alt="Кибер-склад">
-      <h1>Кибер-склад</h1>
+      <span>Кибер-склад</span>
+    </a>
+
+    <div class="search-box">
+      <span style="opacity:0.5">🔍</span>
+      <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames()">
     </div>
-    <nav class="nav-menu">
-      <a href="index.html" class="nav-item active"><span class="icon">🏠</span><span>Главная</span></a>
-      <a href="create.html" class="nav-item"><span class="icon">🛠️</span><span>Создать</span></a>
-      <a href="mygames.html" class="nav-item"><span class="icon">📦</span><span>Мои игры</span></a>
-      <a href="avatar.html" class="nav-item"><span class="icon">👤</span><span>Аватар</span></a>
-      <a href="friends.html" class="nav-item"><span class="icon">👥</span><span>Друзья</span></a>
-      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span><span>Настройки</span></a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-card" onclick="location.href='avatar.html'">
-        <div class="user-avatar" id="userAvatarIcon">😎</div>
-        <div class="user-info">
-          <div style="font-weight:600;font-size:0.9rem" id="userName">Игрок</div>
-          <div style="font-size:0.75rem;color:#888">Онлайн</div>
-        </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Рекомендуемые -->
+    <section class="section">
+      <div class="section-header">
+        <h2>🔥 Рекомендуемые</h2>
+        <span>лучшие игры прямо сейчас</span>
       </div>
-    </div>
-  </aside>
+      <div class="games-grid" id="featuredGames"></div>
+    </section>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="search-box">
-        <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames()">
+    <!-- Популярные -->
+    <section class="section">
+      <div class="section-header">
+        <h2>⭐ Популярные</h2>
       </div>
-      <div class="topbar-actions">
-        <button class="btn btn-create" onclick="location.href='create.html'">＋ Создать игру</button>
+      <div class="games-grid" id="popularGames"></div>
+    </section>
+
+    <!-- Все игры -->
+    <section class="section">
+      <div class="section-header">
+        <h2>🎮 Все игры</h2>
       </div>
-    </div>
+      <div class="games-grid" id="allGames"></div>
+    </section>
 
-    <div class="content">
-      <div class="section-title">🔥 Рекомендуемые <span>лучшие игры прямо сейчас</span></div>
-      <div class="games-row" id="featuredGames"></div>
-
-      <div class="section-title">⭐ Популярные</div>
-      <div class="games-row" id="popularGames"></div>
-
-      <div class="section-title">🆕 Новые и опубликованные</div>
-      <div class="games-row" id="newGames"></div>
-
-      <div id="myPublishedSection" style="display:none">
-        <div class="section-title">📌 Мои опубликованные игры</div>
-        <div class="games-row" id="myPublishedGames"></div>
-      </div>
-    </div>
   </div>
 
-  <script src="app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      loadUser();
-      renderCatalog();
-    });
-
-    function renderCatalog() {
-      const all = getAllGames();
-      const featured = all.slice(0, 4);
-      const popular = all.slice(2, 8);
-      const newest = [...getPublishedGames(), ...all].slice(0, 8);
-
-      renderGameCards('featuredGames', featured);
-      renderGameCards('popularGames', popular);
-      renderGameCards('newGames', newest);
-
-      const myPub = getPublishedGames();
-      if (myPub.length > 0) {
-        document.getElementById('myPublishedSection').style.display = 'block';
-        renderGameCards('myPublishedGames', myPub);
+    const GAMES = [
+      {
+        id: 'obby',
+        name: 'Obby Adventure',
+        desc: 'Пройди сложные препятствия и доберись до финиша!',
+        emoji: '🏃',
+        color: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+        players: 1247,
+        rating: 4.8,
+        file: 'games/obby.html'
+      },
+      {
+        id: 'tycoon',
+        name: 'Click Tycoon',
+        desc: 'Зарабатывай монеты, покупай улучшения и стань самым богатым!',
+        emoji: '💰',
+        color: 'linear-gradient(135deg, #f9ca24, #f0932b)',
+        players: 892,
+        rating: 4.6,
+        file: 'games/tycoon.html'
+      },
+      {
+        id: 'racing',
+        name: 'Speed Race',
+        desc: 'Гонки на скорость. Обгони всех и приди первым!',
+        emoji: '🏎️',
+        color: 'linear-gradient(135deg, #4834d4, #686de0)',
+        players: 654,
+        rating: 4.5,
+        file: 'games/racing.html'
+      },
+      {
+        id: 'hangout',
+        name: 'Hangout Plaza',
+        desc: 'Гуляй, общайся и танцуй вместе с другими игроками!',
+        emoji: '👫',
+        color: 'linear-gradient(135deg, #6ab04c, #badc58)',
+        players: 2103,
+        rating: 4.9,
+        file: 'games/hangout.html'
+      },
+      {
+        id: 'pets',
+        name: 'Pet Simulator',
+        desc: 'Собирай питомцев, качай их и становись легендой!',
+        emoji: '🐶',
+        color: 'linear-gradient(135deg, #eb4d4b, #ff7979)',
+        players: 1789,
+        rating: 4.7,
+        file: 'games/pets.html'
+      },
+      {
+        id: 'obby2',
+        name: 'Sky Obby',
+        desc: 'Сложный паркур в небесах. Сможешь пройти до конца?',
+        emoji: '🏗️',
+        color: 'linear-gradient(135deg, #22a6b3, #7ed6df)',
+        players: 543,
+        rating: 4.4,
+        file: 'games/obby2.html'
+      },
+      {
+        id: 'parkour',
+        name: 'Extreme Parkour',
+        desc: 'Самый сложный паркур. Только для настоящих профи!',
+        emoji: '🧗',
+        color: 'linear-gradient(135deg, #e17055, #d63031)',
+        players: 321,
+        rating: 4.3,
+        file: 'games/obby.html'
+      },
+      {
+        id: 'farm',
+        name: 'Ферма Кликер',
+        desc: 'Выращивай урожай, продавай и расширяй свою ферму.',
+        emoji: '🌾',
+        color: 'linear-gradient(135deg, #00b894, #55efc4)',
+        players: 876,
+        rating: 4.5,
+        file: 'games/tycoon.html'
       }
+    ];
+
+    function renderGames(containerId, games) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      games.forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = () => location.href = g.file;
+
+        card.innerHTML = `
+          <div class="game-thumb" style="background:${g.color}">
+            ${g.emoji}
+            <div class="players">👤 ${g.players.toLocaleString('ru')}</div>
+          </div>
+          <div class="game-body">
+            <h3>${g.name}</h3>
+            <p>${g.desc}</p>
+            <div class="game-footer">
+              <div class="rating">⭐ ${g.rating}</div>
+              <button class="play-btn" onclick="event.stopPropagation(); location.href='${g.file}'">Играть</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     function filterGames() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
       document.querySelectorAll('.game-card').forEach(card => {
         const name = card.querySelector('h3').textContent.toLowerCase();
-        card.style.display = name.includes(q) ? '' : 'none';
+        const desc = card.querySelector('p').textContent.toLowerCase();
+        card.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
       });
     }
+
+    // Рендер
+    renderGames('featuredGames', GAMES.slice(0, 4));
+    renderGames('popularGames', GAMES.slice(2, 6));
+    renderGames('allGames', GAMES);
   </script>
 </body>
 </html>
