@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Друзья — Нексус</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.svg" alt="Нексус">
+      <h1>Нексус</h1>
+    </div>
+    <nav class="nav-menu">
+      <a href="index.html" class="nav-item"><span class="icon">🏠</span><span>Главная</span></a>
+      <a href="create.html" class="nav-item"><span class="icon">🛠️</span><span>Создать</span></a>
+      <a href="mygames.html" class="nav-item"><span class="icon">📦</span><span>Мои игры</span></a>
+      <a href="avatar.html" class="nav-item"><span class="icon">👤</span><span>Аватар</span></a>
+      <a href="friends.html" class="nav-item active"><span class="icon">👥</span><span>Друзья</span></a>
+      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span><span>Настройки</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="location.href='avatar.html'">
+        <div class="user-avatar" id="userAvatarIcon">😎</div>
+        <div class="user-info">
+          <div style="font-weight:600;font-size:0.9rem" id="userName">Игрок</div>
+          <div style="font-size:0.75rem;color:#888">Онлайн</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="font-size:1.2rem;font-weight:700">👥 Друзья</div>
+    </div>
+
+    <div class="content">
+      <div class="section-title">Онлайн сейчас</div>
+      <div class="games-row" id="friendsList"></div>
+
+      <div style="margin-top:40px;text-align:center;color:#888">
+        <p>Это демо-список друзей. В полной версии здесь будет настоящая система друзей и приглашений в игры.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const friends = [
+      { name: 'КиберКот', emoji: '🐱', status: 'Играет в Hangout Plaza' },
+      { name: 'ПроИгрок99', emoji: '🤖', status: 'В меню' },
+      { name: 'Новичок2026', emoji: '😀', status: 'Играет в Pet Simulator' },
+      { name: 'МастерПаркура', emoji: '🦸', status: 'Играет в Sky Obby' },
+      { name: 'ТайкунБосс', emoji: '💰', status: 'Оффлайн' },
+      { name: 'ГонщикX', emoji: '🏎️', status: 'Играет в Speed Race' }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUser();
+      const container = document.getElementById('friendsList');
+      friends.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.style.cursor = 'default';
+        card.innerHTML = `
+          <div class="game-thumb" style="background:linear-gradient(135deg,#2d3436,#636e72);height:100px">
+            <span style="font-size:3rem">${f.emoji}</span>
+          </div>
+          <div class="game-info">
+            <h3>${f.name}</h3>
+            <p style="color:${f.status.includes('Оффлайн') ? '#888' : '#00b06f'}">${f.status}</p>
+            <div class="game-meta">
+              <button class="play-btn-sm" ${f.status.includes('Оффлайн') ? 'disabled style="opacity:0.4"' : ''}>Присоединиться</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

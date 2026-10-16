@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки — Нексус</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.svg" alt="Нексус">
+      <h1>Нексус</h1>
+    </div>
+    <nav class="nav-menu">
+      <a href="index.html" class="nav-item"><span class="icon">🏠</span><span>Главная</span></a>
+      <a href="create.html" class="nav-item"><span class="icon">🛠️</span><span>Создать</span></a>
+      <a href="mygames.html" class="nav-item"><span class="icon">📦</span><span>Мои игры</span></a>
+      <a href="avatar.html" class="nav-item"><span class="icon">👤</span><span>Аватар</span></a>
+      <a href="friends.html" class="nav-item"><span class="icon">👥</span><span>Друзья</span></a>
+      <a href="settings.html" class="nav-item active"><span class="icon">⚙️</span><span>Настройки</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="location.href='avatar.html'">
+        <div class="user-avatar" id="userAvatarIcon">😎</div>
+        <div class="user-info">
+          <div style="font-weight:600;font-size:0.9rem" id="userName">Игрок</div>
+          <div style="font-size:0.75rem;color:#888">Онлайн</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="font-size:1.2rem;font-weight:700">⚙️ Настройки</div>
+    </div>
+
+    <div class="content">
+      <div class="settings-panel">
+        <div class="setting-row">
+          <div>
+            <div style="font-weight:600">Звуки</div>
+            <div style="font-size:0.85rem;color:#888">Включить звуковые эффекты</div>
+          </div>
+          <div class="toggle on" id="toggleSound" onclick="toggleSetting(this,'sound')"></div>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div style="font-weight:600">Музыка</div>
+            <div style="font-size:0.85rem;color:#888">Фоновая музыка в играх</div>
+          </div>
+          <div class="toggle on" id="toggleMusic" onclick="toggleSetting(this,'music')"></div>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div style="font-weight:600">Графика</div>
+            <div style="font-size:0.85rem;color:#888">Качество изображения</div>
+          </div>
+          <select id="graphicsSelect" onchange="changeGraphics()" style="padding:8px 12px;background:var(--bg3);border:1px solid #333;border-radius:8px;color:white">
+            <option value="low">Низкая</option>
+            <option value="medium">Средняя</option>
+            <option value="high" selected>Высокая</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div style="font-weight:600">Язык</div>
+            <div style="font-size:0.85rem;color:#888">Язык интерфейса</div>
+          </div>
+          <select style="padding:8px 12px;background:var(--bg3);border:1px solid #333;border-radius:8px;color:white" disabled>
+            <option selected>Русский</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div style="font-weight:600">Сбросить данные</div>
+            <div style="font-size:0.85rem;color:#888">Удалить все опубликованные игры и настройки</div>
+          </div>
+          <button class="btn" style="background:#e74c3c;color:white" onclick="resetData()">Сбросить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUser();
+      const s = getSettings();
+      document.getElementById('toggleSound').classList.toggle('on', s.sound);
+      document.getElementById('toggleMusic').classList.toggle('on', s.music);
+      document.getElementById('graphicsSelect').value = s.graphics || 'high';
+    });
+
+    function toggleSetting(el, key) {
+      el.classList.toggle('on');
+      const s = getSettings();
+      s[key] = el.classList.contains('on');
+      saveSettings(s);
+    }
+
+    function changeGraphics() {
+      const s = getSettings();
+      s.graphics = document.getElementById('graphicsSelect').value;
+      saveSettings(s);
+    }
+
+    function resetData() {
+      if (confirm('Точно сбросить все данные? Это нельзя отменить.')) {
+        localStorage.removeItem('nexus_published');
+        localStorage.removeItem('nexus_settings');
+        localStorage.removeItem('nexus_username');
+        localStorage.removeItem('nexus_avatar');
+        alert('Данные сброшены');
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>

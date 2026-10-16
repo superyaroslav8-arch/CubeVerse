@@ -3,69 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CubeVerse — Игровая платформа</title>
+  <title>Нексус — Игровая платформа</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-  <header>
-    <div class="logo-container">
-      <img src="logo.svg" alt="CubeVerse Logo" class="logo">
-      <h1>CubeVerse</h1>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.svg" alt="Нексус">
+      <h1>Нексус</h1>
     </div>
-    <p class="tagline">Твоя вселенная игр • Много миров • Всё работает</p>
-  </header>
-
-  <main>
-    <section class="games-grid">
-      <div class="game-card" onclick="location.href='games/obby.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">🏃</div>
-        <h3>Obby Adventure</h3>
-        <p>Пройди сложные препятствия и доберись до финиша!</p>
-        <button class="play-btn">Играть</button>
+    <nav class="nav-menu">
+      <a href="index.html" class="nav-item active"><span class="icon">🏠</span><span>Главная</span></a>
+      <a href="create.html" class="nav-item"><span class="icon">🛠️</span><span>Создать</span></a>
+      <a href="mygames.html" class="nav-item"><span class="icon">📦</span><span>Мои игры</span></a>
+      <a href="avatar.html" class="nav-item"><span class="icon">👤</span><span>Аватар</span></a>
+      <a href="friends.html" class="nav-item"><span class="icon">👥</span><span>Друзья</span></a>
+      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span><span>Настройки</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="location.href='avatar.html'">
+        <div class="user-avatar" id="userAvatarIcon">😎</div>
+        <div class="user-info">
+          <div style="font-weight:600;font-size:0.9rem" id="userName">Игрок</div>
+          <div style="font-size:0.75rem;color:#888">Онлайн</div>
+        </div>
       </div>
+    </div>
+  </aside>
 
-      <div class="game-card" onclick="location.href='games/tycoon.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #f9ca24, #f0932b);">💰</div>
-        <h3>Click Tycoon</h3>
-        <p>Зарабатывай монеты, покупай улучшения и стань самым богатым!</p>
-        <button class="play-btn">Играть</button>
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames()">
       </div>
-
-      <div class="game-card" onclick="location.href='games/racing.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #4834d4, #686de0);">🏎️</div>
-        <h3>Speed Race</h3>
-        <p>Гонки на скорость. Обогони соперников и приди первым!</p>
-        <button class="play-btn">Играть</button>
+      <div class="topbar-actions">
+        <button class="btn btn-create" onclick="location.href='create.html'">＋ Создать игру</button>
       </div>
+    </div>
 
-      <div class="game-card" onclick="location.href='games/hangout.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #6ab04c, #badc58);">👥</div>
-        <h3>Hangout Plaza</h3>
-        <p>Гуляй, танцуй и общайся в уютном плазе!</p>
-        <button class="play-btn">Играть</button>
+    <div class="content">
+      <!-- Рекомендуемые -->
+      <div class="section-title">🔥 Рекомендуемые <span>лучшие игры прямо сейчас</span></div>
+      <div class="games-row" id="featuredGames"></div>
+
+      <!-- Популярные -->
+      <div class="section-title">⭐ Популярные</div>
+      <div class="games-row" id="popularGames"></div>
+
+      <!-- Новые -->
+      <div class="section-title">🆕 Новые и опубликованные</div>
+      <div class="games-row" id="newGames"></div>
+
+      <!-- Мои опубликованные (если есть) -->
+      <div id="myPublishedSection" style="display:none">
+        <div class="section-title">📌 Мои опубликованные игры</div>
+        <div class="games-row" id="myPublishedGames"></div>
       </div>
+    </div>
+  </div>
 
-      <div class="game-card" onclick="location.href='games/pets.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #eb4d4b, #ff7979);">🐶</div>
-        <h3>Pet Simulator</h3>
-        <p>Собирай питомцев, качай их и стань легендой!</p>
-        <button class="play-btn">Играть</button>
-      </div>
+  <script src="app.js"></script>
+  <script>
+    // Загрузка игр на главную
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUser();
+      renderCatalog();
+    });
 
-      <div class="game-card" onclick="location.href='games/obby2.html'">
-        <div class="game-thumb" style="background: linear-gradient(135deg, #22a6b3, #7ed6df);">🏗️</div>
-        <h3>Sky Obby</h3>
-        <p>Ещё один сложный паркур. Не упади!</p>
-        <button class="play-btn">Играть</button>
-      </div>
-    </section>
-  </main>
+    function renderCatalog() {
+      const all = getAllGames();
+      const featured = all.slice(0, 4);
+      const popular = all.slice(2, 8);
+      const newest = [...getPublishedGames(), ...all].slice(0, 8);
 
-  <footer>
-    <p>Сделано для тебя • CubeVerse 2026 • Всё работает и открывается</p>
-  </footer>
+      renderGameCards('featuredGames', featured);
+      renderGameCards('popularGames', popular);
+      renderGameCards('newGames', newest);
 
-  <script src="script.js"></script>
+      const myPub = getPublishedGames();
+      if (myPub.length > 0) {
+        document.getElementById('myPublishedSection').style.display = 'block';
+        renderGameCards('myPublishedGames', myPub);
+      }
+    }
+
+    function filterGames() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      document.querySelectorAll('.game-card').forEach(card => {
+        const name = card.querySelector('h3').textContent.toLowerCase();
+        card.style.display = name.includes(q) ? '' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>
