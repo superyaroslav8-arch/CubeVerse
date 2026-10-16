@@ -16,6 +16,7 @@
 <div class="page">
   <div class="chips" id="chips">
     <div class="chip active" data-cat="all" onclick="setCat(this)">Все</div>
+    <div class="chip" data-cat="3d" onclick="setCat(this)">🧊 3D</div>
     <div class="chip" data-cat="action" onclick="setCat(this)">Паркур</div>
     <div class="chip" data-cat="sport" onclick="setCat(this)">Спорт</div>
     <div class="chip" data-cat="arcade" onclick="setCat(this)">Аркады</div>
@@ -64,7 +65,8 @@ const ENGINES={
   snake:'games/snake.html',flappy:'games/flappy.html',memory:'games/memory.html',
   breakout:'games/breakout.html',dodge:'games/dodge.html',g2048:'games/game2048.html',
   football:'games/football.html',hockey:'games/hockey.html',basket:'games/basket.html',
-  tennis:'games/tennis.html'
+  tennis:'games/tennis.html',
+  obby3d:'games/obby3d.html',race3d:'games/race3d.html',collect3d:'games/collect3d.html'
 };
 const COL=['linear-gradient(135deg,#e74c3c,#c0392b)','linear-gradient(135deg,#e67e22,#d35400)',
 'linear-gradient(135deg,#f1c40f,#f39c12)','linear-gradient(135deg,#2ecc71,#27ae60)',
@@ -74,36 +76,37 @@ const COL=['linear-gradient(135deg,#e74c3c,#c0392b)','linear-gradient(135deg,#e6
 'linear-gradient(135deg,#607d8b,#455a64)','linear-gradient(135deg,#795548,#5d4037)'];
 const EM=['🏃','💰','🏎️','👫','🐶','🏗️','🐍','📦','🧠','🧱','⚡','🔢','⚽','🏒','🏀','🎾',
 '🎯','🚀','👾','🐉','🦄','🐱','🦊','🐻','🦁','🐸','🐲','🦸','🧙','👻','🔥','❄️','🌈','💎',
-'🛡️','⚔️','🏹','💣','🎲','🎸','🏆','🎮','🕹️','🏈','⚾','🏐','🏓','🎳','🥊','🚴','🏄','🧗'];
+'🛡️','⚔️','🏹','💣','🎲','🎸','🏆','🎮','🕹️','🏈','⚾','🏐','🏓','🎳','🥊','🚴','🏄','🧗','🧊','🪙'];
 
-// Огромный каталог (генерируется)
 const PRE=['Super','Mega','Ultra','Pro','Epic','Neon','Dark','Cyber','Pixel','Retro','Fire','Ice',
 'Thunder','Shadow','Golden','Crystal','Ninja','Space','Ocean','Forest','Desert','Sky','Lava',
 'Frost','Storm','Quantum','Hyper','Turbo','Elite','Master','Legend','Royal','Magic','Dragon',
-'Phantom','Solar','Lunar','Cosmic','Atomic','Turbo','Blitz','Rapid','Swift','Brave','Mighty'];
+'Phantom','Solar','Lunar','Cosmic','Atomic','Blitz','Rapid','Swift','Brave','Mighty','3D'];
 const MID=['Obby','Parkour','Run','Rush','Race','Jump','Quest','Adventure','Tycoon','Clicker',
 'Simulator','Arena','Battle','Wars','Legends','Heroes','World','Land','Zone','Cup','League',
-'Snake','Flappy','Breakout','Memory','Dodge','Football','Hockey','Basket','Tennis','Pets'];
+'Snake','Flappy','Breakout','Memory','Dodge','Football','Hockey','Basket','Tennis','Pets','Cube'];
 const CATMAP={Obby:'action',Parkour:'action',Run:'action',Rush:'action',Race:'action',Jump:'action',
 Quest:'action',Adventure:'action',Tycoon:'idle',Clicker:'idle',Simulator:'idle',Arena:'sport',
 Battle:'action',Wars:'action',Legends:'action',Heroes:'action',World:'social',Land:'social',
 Zone:'social',Cup:'sport',League:'sport',Snake:'arcade',Flappy:'arcade',Breakout:'arcade',
-Memory:'puzzle',Dodge:'action',Football:'sport',Hockey:'sport',Basket:'sport',Tennis:'sport',Pets:'idle'};
+Memory:'puzzle',Dodge:'action',Football:'sport',Hockey:'sport',Basket:'sport',Tennis:'sport',Pets:'idle',Cube:'3d'};
 const ENGMAP={Obby:'obby',Parkour:'obby2',Run:'obby',Rush:'dodge',Race:'racing',Jump:'obby2',
 Quest:'obby',Adventure:'obby2',Tycoon:'tycoon',Clicker:'tycoon',Simulator:'pets',Arena:'football',
 Battle:'dodge',Wars:'dodge',Legends:'obby',Heroes:'obby2',World:'hangout',Land:'hangout',
 Zone:'hangout',Cup:'football',League:'hockey',Snake:'snake',Flappy:'flappy',Breakout:'breakout',
-Memory:'memory',Dodge:'dodge',Football:'football',Hockey:'hockey',Basket:'basket',Tennis:'tennis',Pets:'pets'};
+Memory:'memory',Dodge:'dodge',Football:'football',Hockey:'hockey',Basket:'basket',Tennis:'tennis',Pets:'pets',Cube:'obby3d'};
 
-const TOTAL=5000; // показываем как большой каталог
+const TOTAL=5000;
 let allGames=[], shown=0, pageSize=48, currentCat='all', searchQ='';
 
 function makeGames(){
   allGames=[];
-  // Реальные базовые
   const real=[
-    {n:'Obby Adventure',d:'100 уровней паркура!',e:'obby',c:'action',em:'🏃'},
-    {n:'Sky Obby',d:'Небесный паркур с 100 уровнями',e:'obby2',c:'action',em:'🏗️'},
+    {n:'3D Obby',d:'Настоящий 3D паркур! Прыгай по платформам',e:'obby3d',c:'3d',em:'🧊'},
+    {n:'3D Гонки',d:'Объёмные гонки с препятствиями',e:'race3d',c:'3d',em:'🏎️'},
+    {n:'3D Сбор монет',d:'Собери все монеты в 3D мире',e:'collect3d',c:'3d',em:'🪙'},
+    {n:'Obby Adventure',d:'100 РАЗНЫХ уровней паркура!',e:'obby',c:'action',em:'🏃'},
+    {n:'Sky Obby',d:'100 уровней небесного паркура',e:'obby2',c:'action',em:'🏗️'},
     {n:'Click Tycoon',d:'Кликай и строй империю',e:'tycoon',c:'idle',em:'💰'},
     {n:'Speed Race',d:'Гонки на выживание',e:'racing',c:'action',em:'🏎️'},
     {n:'Hangout Plaza',d:'Гуляй с друзьями',e:'hangout',c:'social',em:'👫'},
@@ -119,23 +122,19 @@ function makeGames(){
     {n:'Баскетбол',d:'Бросай в кольцо',e:'basket',c:'sport',em:'🏀'},
     {n:'Теннис',d:'Отбивай мяч',e:'tennis',c:'sport',em:'🎾'},
   ];
-  real.forEach((r,i)=>allGames.push({id:i,name:r.n,desc:r.d,emoji:r.em,color:COL[i%COL.length],players:800+Math.floor(Math.random()*3000),file:ENGINES[r.e],cat:r.c}));
+  real.forEach((r,i)=>allGames.push({id:i,name:r.n,desc:r.d,emoji:r.em,color:COL[i%COL.length],players:900+Math.floor(Math.random()*3000),file:ENGINES[r.e],cat:r.c}));
 
-  // Генерируем остальные
   for(let i=0;i<TOTAL-real.length;i++){
     const p=PRE[i%PRE.length], m=MID[i%MID.length];
-    const name=p+' '+m+(i>MID.length*PRE.length?' '+((i%99)+1):'');
+    const name=p+' '+m+(i>800?' '+(i%200+1):'');
     const cat=CATMAP[m]||'action';
     const eng=ENGMAP[m]||'obby';
     allGames.push({
-      id:real.length+i,
-      name,
-      desc: name+' — играй прямо сейчас!',
-      emoji:EM[i%EM.length],
-      color:COL[i%COL.length],
+      id:real.length+i, name,
+      desc:name+' — играй прямо сейчас!',
+      emoji:EM[i%EM.length], color:COL[i%COL.length],
       players:50+Math.floor(Math.random()*4000),
-      file:ENGINES[eng],
-      cat
+      file:ENGINES[eng], cat
     });
   }
 }
@@ -172,15 +171,11 @@ function loadMore(){shown+=pageSize;render()}
 function setCat(el){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  currentCat=el.dataset.cat;
-  shown=pageSize;render();
+  currentCat=el.dataset.cat;shown=pageSize;render();
 }
 function doSearch(){searchQ=document.getElementById('q').value.toLowerCase().trim();shown=pageSize;render()}
 
-makeGames();
-shown=pageSize;
-render();
-updateAuthUI();
+makeGames();shown=pageSize;render();updateAuthUI();
 </script>
 </body>
 </html>
