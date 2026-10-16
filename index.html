@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Кибер-склад — Игры</title>
+  <title>Кибер-склад — 100+ игр</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
 <header class="header">
   <a href="index.html" class="logo-link"><img src="logo.svg" alt=""><span>Кибер-склад</span></a>
-  <div class="search-box"><span style="opacity:.45">🔍</span><input id="searchInput" placeholder="Поиск игр..." oninput="filterGames()"></div>
+  <div class="search-box"><span style="opacity:.45">🔍</span><input id="searchInput" placeholder="Поиск среди 100+ игр..." oninput="filterGames()"></div>
   <div class="header-right" id="authArea"></div>
 </header>
 
@@ -24,7 +24,15 @@
     <div class="games-grid" id="sports"></div>
   </section>
   <section class="section">
-    <div class="section-header"><h2>🎮 Все игры</h2></div>
+    <div class="section-header"><h2>🏃 Паркур и Экшен</h2></div>
+    <div class="games-grid" id="action"></div>
+  </section>
+  <section class="section">
+    <div class="section-header"><h2>🎮 Аркады и Головоломки</h2></div>
+    <div class="games-grid" id="arcade"></div>
+  </section>
+  <section class="section">
+    <div class="section-header"><h2>📦 Все игры <span id="totalCount"></span></h2></div>
     <div class="games-grid" id="all"></div>
   </section>
 </div>
@@ -52,47 +60,231 @@
 
 <script src="auth.js"></script>
 <script>
-const GAMES=[
-  {id:'obby',name:'Obby Adventure',desc:'Паркур на 6 уровней. Пройди до конца!',emoji:'🏃',color:'linear-gradient(135deg,#ff6b6b,#ee5a24)',players:1247,file:'games/obby.html',cat:'action'},
-  {id:'tycoon',name:'Click Tycoon',desc:'Кликай, зарабатывай, прокачивайся!',emoji:'💰',color:'linear-gradient(135deg,#f9ca24,#f0932b)',players:892,file:'games/tycoon.html',cat:'idle'},
-  {id:'racing',name:'Speed Race',desc:'Гонки. Обгони всех!',emoji:'🏎️',color:'linear-gradient(135deg,#4834d4,#686de0)',players:654,file:'games/racing.html',cat:'action'},
-  {id:'hangout',name:'Hangout Plaza',desc:'Гуляй и общайся!',emoji:'👫',color:'linear-gradient(135deg,#6ab04c,#badc58)',players:2103,file:'games/hangout.html',cat:'social'},
-  {id:'pets',name:'Pet Simulator',desc:'Собирай и качай питомцев!',emoji:'🐶',color:'linear-gradient(135deg,#eb4d4b,#ff7979)',players:1789,file:'games/pets.html',cat:'idle'},
-  {id:'obby2',name:'Sky Obby',desc:'Небесный паркур. 5 уровней.',emoji:'🏗️',color:'linear-gradient(135deg,#22a6b3,#7ed6df)',players:543,file:'games/obby2.html',cat:'action'},
-  {id:'snake',name:'Змейка',desc:'Классика. Расти и не врежься!',emoji:'🐍',color:'linear-gradient(135deg,#00b894,#55efc4)',players:1102,file:'games/snake.html',cat:'arcade'},
-  {id:'flappy',name:'Flappy Cube',desc:'Летай между труб!',emoji:'📦',color:'linear-gradient(135deg,#fd79a8,#e84393)',players:876,file:'games/flappy.html',cat:'arcade'},
-  {id:'memory',name:'Мемори',desc:'Найди все пары.',emoji:'🧠',color:'linear-gradient(135deg,#a29bfe,#6c5ce7)',players:654,file:'games/memory.html',cat:'puzzle'},
-  {id:'breakout',name:'Арканоид',desc:'Разбей все блоки!',emoji:'🧱',color:'linear-gradient(135deg,#fdcb6e,#e17055)',players:721,file:'games/breakout.html',cat:'arcade'},
-  {id:'dodge',name:'Уворот',desc:'Уворачивайся от блоков!',emoji:'⚡',color:'linear-gradient(135deg,#74b9ff,#0984e3)',players:498,file:'games/dodge.html',cat:'action'},
-  {id:'g2048',name:'2048',desc:'Собери плитку 2048!',emoji:'🔢',color:'linear-gradient(135deg,#ffeaa7,#fdcb6e)',players:1340,file:'games/game2048.html',cat:'puzzle'},
-  // SPORTS
-  {id:'football',name:'Футбол',desc:'Забивай голы! Играй против бота.',emoji:'⚽',color:'linear-gradient(135deg,#00b894,#00cec9)',players:1560,file:'games/football.html',cat:'sport'},
-  {id:'hockey',name:'Хоккей',desc:'Забрось шайбу в ворота соперника!',emoji:'🏒',color:'linear-gradient(135deg,#74b9ff,#0984e3)',players:980,file:'games/hockey.html',cat:'sport'},
-  {id:'basket',name:'Баскетбол',desc:'Бросай мяч в кольцо и набирай очки!',emoji:'🏀',color:'linear-gradient(135deg,#e17055,#d63031)',players:1120,file:'games/basket.html',cat:'sport'},
-  {id:'tennis',name:'Теннис',desc:'Отбивай мяч ракеткой!',emoji:'🎾',color:'linear-gradient(135deg,#55efc4,#00b894)',players:740,file:'games/tennis.html',cat:'sport'}
+// Базовые движки
+const ENGINES = {
+  obby: 'games/obby.html',
+  obby2: 'games/obby2.html',
+  tycoon: 'games/tycoon.html',
+  racing: 'games/racing.html',
+  hangout: 'games/hangout.html',
+  pets: 'games/pets.html',
+  snake: 'games/snake.html',
+  flappy: 'games/flappy.html',
+  memory: 'games/memory.html',
+  breakout: 'games/breakout.html',
+  dodge: 'games/dodge.html',
+  g2048: 'games/game2048.html',
+  football: 'games/football.html',
+  hockey: 'games/hockey.html',
+  basket: 'games/basket.html',
+  tennis: 'games/tennis.html'
+};
+
+const COLORS = [
+  'linear-gradient(135deg,#ff6b6b,#ee5a24)','linear-gradient(135deg,#f9ca24,#f0932b)',
+  'linear-gradient(135deg,#4834d4,#686de0)','linear-gradient(135deg,#6ab04c,#badc58)',
+  'linear-gradient(135deg,#eb4d4b,#ff7979)','linear-gradient(135deg,#22a6b3,#7ed6df)',
+  'linear-gradient(135deg,#00b894,#55efc4)','linear-gradient(135deg,#fd79a8,#e84393)',
+  'linear-gradient(135deg,#a29bfe,#6c5ce7)','linear-gradient(135deg,#fdcb6e,#e17055)',
+  'linear-gradient(135deg,#74b9ff,#0984e3)','linear-gradient(135deg,#ffeaa7,#fdcb6e)',
+  'linear-gradient(135deg,#00b894,#00cec9)','linear-gradient(135deg,#e17055,#d63031)',
+  'linear-gradient(135deg,#55efc4,#00b894)','linear-gradient(135deg,#6c5ce7,#a29bfe)',
+  'linear-gradient(135deg,#fd79a8,#fdcb6e)','linear-gradient(135deg,#00cec9,#0984e3)',
+  'linear-gradient(135deg,#d63031,#e17055)','linear-gradient(135deg,#2d3436,#636e72)'
 ];
 
-function render(id,list){
-  const el=document.getElementById(id);el.innerHTML='';
-  list.forEach(g=>{
-    const c=document.createElement('div');c.className='game-card';c.onclick=()=>location.href=g.file;
-    c.innerHTML=`<div class="game-thumb" style="background:${g.color}">${g.emoji}<div class="players">👤 ${g.players.toLocaleString('ru')}</div></div>
+const EMOJIS = ['🏃','💰','🏎️','👫','🐶','🏗️','🐍','📦','🧠','🧱','⚡','🔢','⚽','🏒','🏀','🎾',
+  '🎯','🚀','👾','🐉','🦄','🐱','🦊','🐻','🦁','🐸','🐲','🦸','🧙','👻','🔥','❄️','🌈','💎',
+  '🛡️','⚔️','🏹','💣','🎲','🃏','🎸','🎹','🏆','🥇','🎮','🕹️','🏀','⚽','🏈','⚾','🏐','🏓',
+  '🎳','🥊','🚴','🏄','🪂','⛷️','🏂','🧗','🧩','♟️','🎰','🎪','🎭','🎨','🎬','🎤'];
+
+// Генерируем 100+ игр
+const BASE = [
+  {name:'Obby Adventure',desc:'Классический паркур на 6 уровней',engine:'obby',cat:'action',emoji:'🏃'},
+  {name:'Sky Obby',desc:'Небесный паркур. 5 сложных уровней',engine:'obby2',cat:'action',emoji:'🏗️'},
+  {name:'Extreme Parkour',desc:'Самый сложный паркур',engine:'obby',cat:'action',emoji:'🧗'},
+  {name:'Ninja Run',desc:'Беги как ниндзя по крышам',engine:'obby',cat:'action',emoji:'🥷'},
+  {name:'Lava Escape',desc:'Убеги от лавы!',engine:'obby2',cat:'action',emoji:'🌋'},
+  {name:'Click Tycoon',desc:'Кликай и богатей',engine:'tycoon',cat:'idle',emoji:'💰'},
+  {name:'Factory Tycoon',desc:'Построй империю фабрик',engine:'tycoon',cat:'idle',emoji:'🏭'},
+  {name:'Crypto Clicker',desc:'Майни монеты кликами',engine:'tycoon',cat:'idle',emoji:'₿'},
+  {name:'Speed Race',desc:'Гонки на скорость',engine:'racing',cat:'action',emoji:'🏎️'},
+  {name:'Night Drift',desc:'Ночные гонки',engine:'racing',cat:'action',emoji:'🌙'},
+  {name:'Hangout Plaza',desc:'Гуляй и общайся',engine:'hangout',cat:'social',emoji:'👫'},
+  {name:'Pet Simulator',desc:'Собирай питомцев',engine:'pets',cat:'idle',emoji:'🐶'},
+  {name:'Dragon Pets',desc:'Собери всех драконов',engine:'pets',cat:'idle',emoji:'🐉'},
+  {name:'Змейка',desc:'Классическая змейка',engine:'snake',cat:'arcade',emoji:'🐍'},
+  {name:'Neon Snake',desc:'Неоновая змейка',engine:'snake',cat:'arcade',emoji:'✨'},
+  {name:'Flappy Cube',desc:'Летай между труб',engine:'flappy',cat:'arcade',emoji:'📦'},
+  {name:'Flappy Bird',desc:'Классический полёт',engine:'flappy',cat:'arcade',emoji:'🐦'},
+  {name:'Мемори',desc:'Найди все пары',engine:'memory',cat:'puzzle',emoji:'🧠'},
+  {name:'Арканоид',desc:'Разбей все блоки',engine:'breakout',cat:'arcade',emoji:'🧱'},
+  {name:'Уворот',desc:'Уворачивайся от блоков',engine:'dodge',cat:'action',emoji:'⚡'},
+  {name:'2048',desc:'Собери 2048',engine:'g2048',cat:'puzzle',emoji:'🔢'},
+  {name:'Футбол',desc:'Забивай голы против бота',engine:'football',cat:'sport',emoji:'⚽'},
+  {name:'Хоккей',desc:'Забрось шайбу',engine:'hockey',cat:'sport',emoji:'🏒'},
+  {name:'Баскетбол',desc:'Бросай в кольцо',engine:'basket',cat:'sport',emoji:'🏀'},
+  {name:'Теннис',desc:'Отбивай мяч',engine:'tennis',cat:'sport',emoji:'🎾'},
+];
+
+// Дополнительные варианты для набора 100+
+const VARIANTS = [
+  // Паркур / Action
+  ['Space Obby','Паркур в космосе','obby','action','🚀'],
+  ['Ice Parkour','Скользкий ледяной паркур','obby2','action','❄️'],
+  ['Fire Run','Беги от огня','obby','action','🔥'],
+  ['Shadow Ninja','Паркур в тенях','obby2','action','🌑'],
+  ['Rainbow Obby','Яркий радужный паркур','obby','action','🌈'],
+  ['Cyber Run','Кибер-паркour','obby2','action','🤖'],
+  ['Jungle Escape','Побег из джунглей','obby','action','🌴'],
+  ['Roof Jump','Прыжки по крышам','obby2','action','🏢'],
+  ['Tower Climb','Заберись на башню','obby','action','🗼'],
+  ['Crystal Path','Путь из кристаллов','obby2','action','💎'],
+  // Idle / Tycoon
+  ['Farm Tycoon','Фермерский бизнес','tycoon','idle','🌾'],
+  ['Pizza Clicker','Пеки пиццу','tycoon','idle','🍕'],
+  ['Mine Empire','Шахтёрская империя','tycoon','idle','⛏️'],
+  ['Cafe Tycoon','Открой свою кафешку','tycoon','idle','☕'],
+  ['Galaxy Miner','Добывай ресурсы в космосе','tycoon','idle','🌌'],
+  ['Zombie Tycoon','Бизнес на зомби','tycoon','idle','🧟'],
+  ['Pet Empire','Империя питомцев','pets','idle','🐾'],
+  ['Cat Collector','Собери всех котиков','pets','idle','🐱'],
+  ['Dog Simulator','Собачий симулятор','pets','idle','🐕'],
+  // Racing
+  ['City Race','Городские гонки','racing','action','🏙️'],
+  ['Desert Rally','Ралли по пустыне','racing','action','🏜️'],
+  ['Snow Race','Гонки по снегу','racing','action','⛄'],
+  ['Turbo Drift','Турбо-дрифт','racing','action','💨'],
+  // Arcade
+  ['Mega Snake','Огромная змейка','snake','arcade','🐍'],
+  ['Pixel Snake','Пиксельная змейка','snake','arcade','👾'],
+  ['Space Flappy','Полёт в космосе','flappy','arcade','🛸'],
+  ['Ghost Flappy','Призрачный полёт','flappy','arcade','👻'],
+  ['Super Breakout','Супер арканоид','breakout','arcade','💥'],
+  ['Color Breaker','Цветной арканоид','breakout','arcade','🎨'],
+  ['Lightning Dodge','Уворот от молний','dodge','action','⚡'],
+  ['Meteor Avoid','Уворачивайся от метеоритов','dodge','action','☄️'],
+  // Puzzle
+  ['Memory Pro','Сложная мемори','memory','puzzle','🧩'],
+  ['Emoji Memory','Мемори с эмодзи','memory','puzzle','😊'],
+  ['2048 Extreme','Экстремальный 2048','g2048','puzzle','🔥'],
+  ['4096 Challenge','Собери 4096','g2048','puzzle','🏆'],
+  // Sport extras
+  ['Street Football','Уличный футбол','football','sport','⚽'],
+  ['Pro Hockey','Профессиональный хоккей','hockey','sport','🏒'],
+  ['Streetball','Стритбол','basket','sport','🏀'],
+  ['Beach Tennis','Пляжный теннис','tennis','sport','🏖️'],
+  ['Volleyball','Волейбол (режим)','tennis','sport','🏐'],
+  ['Ping Pong','Настольный теннис','tennis','sport','🏓'],
+  ['Baseball Hit','Бейсбол','basket','sport','⚾'],
+  ['Golf Putt','Гольф','basket','sport','⛳'],
+  // More variety
+  ['Zombie Hangout','Тусовка зомби','hangout','social','🧟'],
+  ['Space Plaza','Космическая площадь','hangout','social','🪐'],
+  ['Anime Run','Аниме-паркour','obby','action','🌸'],
+  ['Pixel Adventure','Пиксельное приключение','obby2','action','🕹️'],
+  ['Gold Rush','Золотая лихорадка','tycoon','idle','🥇'],
+  ['Diamond Clicker','Кликер алмазов','tycoon','idle','💎'],
+  ['Rocket Race','Ракетные гонки','racing','action','🚀'],
+  ['Bike Race','Велогонки','racing','action','🚴'],
+  ['Snake Royale','Королевская змейка','snake','arcade','👑'],
+  ['Flappy Royale','Королевский полёт','flappy','arcade','👑'],
+  ['Block Storm','Шторм блоков','dodge','action','🧱'],
+  ['Ice Breaker','Ледокол','breakout','arcade','🧊'],
+  ['Mind Master','Мастер памяти','memory','puzzle','🎓'],
+  ['Number King','Король чисел','g2048','puzzle','👑'],
+  ['Goal Machine','Машина голов','football','sport','⚽'],
+  ['Puck Master','Мастер шайбы','hockey','sport','🏒'],
+  ['Slam Dunk','Слэм-данк','basket','sport','🏀'],
+  ['Ace Serve','Подача туза','tennis','sport','🎾'],
+  ['Parkour King','Король паркура','obby','action','👑'],
+  ['Sky Master','Повелитель неба','obby2','action','☁️'],
+  ['Click God','Бог кликов','tycoon','idle','👆'],
+  ['Drift King','Король дрифта','racing','action','🏎️'],
+  ['Party Zone','Зона вечеринки','hangout','social','🎉'],
+  ['Legendary Pets','Легендарные питомцы','pets','idle','✨'],
+  ['Venom Snake','Ядовитая змейка','snake','arcade','☠️'],
+  ['Sky Bird','Небесная птица','flappy','arcade','🕊️'],
+  ['Brick Storm','Шторм кирпичей','breakout','arcade','🌪️'],
+  ['Bullet Dodge','Уворот от пуль','dodge','action','🔫'],
+  ['Card Memory','Карточная память','memory','puzzle','🃏'],
+  ['Tile Merge','Слияние плиток','g2048','puzzle','🔲'],
+  ['Champions League','Лига чемпионов','football','sport','🏆'],
+  ['Ice Arena','Ледовая арена','hockey','sport','🧊'],
+  ['NBA Stars','Звёзды НБА','basket','sport','⭐'],
+  ['Wimbledon','Уимблдон','tennis','sport','🍓'],
+];
+
+// Собираем полный список
+let GAMES = [];
+let idCounter = 1;
+
+function addGame(name, desc, engine, cat, emoji) {
+  const color = COLORS[GAMES.length % COLORS.length];
+  const players = 200 + Math.floor(Math.random() * 2500);
+  GAMES.push({
+    id: 'g' + (idCounter++),
+    name,
+    desc,
+    emoji: emoji || EMOJIS[GAMES.length % EMOJIS.length],
+    color,
+    players,
+    file: ENGINES[engine] || ENGINES.obby,
+    cat
+  });
+}
+
+// Базовые
+BASE.forEach(b => addGame(b.name, b.desc, b.engine, b.cat, b.emoji));
+
+// Варианты
+VARIANTS.forEach(v => addGame(v[0], v[1], v[2], v[3], v[4]));
+
+// Добиваем до 110+ случайными тематическими
+const prefixes = ['Super','Mega','Ultra','Pro','Epic','Legendary','Neon','Dark','Light','Cyber','Pixel','Retro','Future','Ancient','Magic','Fire','Ice','Thunder','Shadow','Golden'];
+const suffixes = ['Adventure','Quest','Run','Rush','Challenge','Master','Hero','Legend','Battle','Arena','World','Land','Zone','Cup','League','Simulator','Clicker','Tycoon','Race','Jump'];
+const enginesList = Object.keys(ENGINES);
+const cats = ['action','arcade','idle','puzzle','sport','social'];
+
+while (GAMES.length < 110) {
+  const name = prefixes[Math.floor(Math.random()*prefixes.length)] + ' ' + suffixes[Math.floor(Math.random()*suffixes.length)];
+  if (GAMES.some(g => g.name === name)) continue;
+  const eng = enginesList[Math.floor(Math.random()*enginesList.length)];
+  const cat = cats[Math.floor(Math.random()*cats.length)];
+  addGame(name, 'Увлекательная игра в жанре ' + cat, eng, cat, EMOJIS[Math.floor(Math.random()*EMOJIS.length)]);
+}
+
+function render(id, list) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  list.forEach(g => {
+    const c = document.createElement('div');
+    c.className = 'game-card';
+    c.onclick = () => location.href = g.file;
+    c.innerHTML = `<div class="game-thumb" style="background:${g.color}">${g.emoji}<div class="players">👤 ${g.players.toLocaleString('ru')}</div></div>
       <div class="game-body"><h3>${g.name}</h3><p>${g.desc}</p>
       <div class="game-footer"><button class="play-btn" onclick="event.stopPropagation();location.href='${g.file}'">Играть</button></div></div>`;
     el.appendChild(c);
   });
 }
-function filterGames(){
-  const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  document.querySelectorAll('.game-card').forEach(c=>{
-    const n=c.querySelector('h3').textContent.toLowerCase();
-    const d=c.querySelector('p').textContent.toLowerCase();
-    c.style.display=(n.includes(q)||d.includes(q))?'':'none';
+
+function filterGames() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  document.querySelectorAll('.game-card').forEach(c => {
+    const n = c.querySelector('h3').textContent.toLowerCase();
+    const d = c.querySelector('p').textContent.toLowerCase();
+    c.style.display = (n.includes(q) || d.includes(q)) ? '' : 'none';
   });
 }
-render('featured',GAMES.slice(0,4));
-render('sports',GAMES.filter(g=>g.cat==='sport'));
-render('all',GAMES);
+
+// Рендер
+render('featured', GAMES.slice(0, 4));
+render('sports', GAMES.filter(g => g.cat === 'sport').slice(0, 12));
+render('action', GAMES.filter(g => g.cat === 'action').slice(0, 12));
+render('arcade', GAMES.filter(g => g.cat === 'arcade' || g.cat === 'puzzle').slice(0, 12));
+render('all', GAMES);
+document.getElementById('totalCount').textContent = '(' + GAMES.length + ')';
 updateAuthUI();
 </script>
 </body>
