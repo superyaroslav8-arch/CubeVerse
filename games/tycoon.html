@@ -6,58 +6,77 @@
   <title>Click Tycoon — Кибер-склад</title>
   <link rel="stylesheet" href="../styles.css">
   <style>
-    body{background:#121215}
-    .game-header{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#1a1a1f;border-bottom:1px solid #2a2a32}
-    .back-btn{background:#222228;border:none;color:white;padding:10px 18px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:600}
-    .tycoon-container{max-width:700px;margin:30px auto;text-align:center;padding:20px}
-    .money{font-size:3rem;color:#f9ca24;margin:20px 0;text-shadow:0 0 20px #f9ca24}
-    .click-area{width:200px;height:200px;margin:30px auto;background:linear-gradient(135deg,#f9ca24,#f0932b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:4rem;cursor:pointer;transition:transform .1s;box-shadow:0 0 40px rgba(249,202,36,.5);user-select:none}
-    .click-area:active{transform:scale(.92)}
-    .upgrades{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:30px}
-    .upgrade-btn{background:rgba(255,255,255,.08);border:2px solid #f9ca24;color:white;padding:15px;border-radius:12px;cursor:pointer;font-size:1rem}
-    .upgrade-btn:hover{background:rgba(249,202,36,.2)}
-    .upgrade-btn:disabled{opacity:.4;cursor:not-allowed}
+    body { background: #0d0d12; }
+    .tycoon-wrap { max-width: 560px; margin: 30px auto; text-align: center; padding: 0 16px; }
+    .money { font-size: 2.8rem; color: #f9ca24; margin: 20px 0 8px; text-shadow: 0 0 24px rgba(249,202,36,0.4); }
+    .mps { color: #a0a0b0; margin-bottom: 24px; }
+    .click-area {
+      width: 180px; height: 180px; margin: 0 auto 30px;
+      background: linear-gradient(135deg, #f9ca24, #f0932b);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; cursor: pointer; transition: transform 0.1s;
+      box-shadow: 0 0 40px rgba(249,202,36,0.35); user-select: none;
+    }
+    .click-area:active { transform: scale(0.92); }
+    .upgrades { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .upgrade-btn {
+      background: #1a1a24; border: 2px solid #f9ca24; color: white;
+      padding: 14px 10px; border-radius: 14px; cursor: pointer; font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .upgrade-btn:hover { background: rgba(249,202,36,0.12); }
+    .upgrade-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <div class="game-header">
-    <a href="../index.html" class="back-btn">← Кибер-склад</a>
-    <div style="font-weight:700;font-size:1.2rem">💰 Click Tycoon</div>
-    <div></div>
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div style="font-weight:700">💰 Click Tycoon</div>
+    <div style="width:90px"></div>
   </div>
-  <div class="tycoon-container">
+
+  <div class="tycoon-wrap">
     <div class="money">💰 <span id="money">0</span></div>
-    <p>Монет в секунду: <span id="mps">0</span></p>
-    <div class="click-area" id="clicker" onclick="clickMoney()">💰</div>
+    <div class="mps">в секунду: <span id="mps">0</span></div>
+    <div class="click-area" onclick="clickMoney()">💰</div>
     <div class="upgrades">
-      <button class="upgrade-btn" id="up1" onclick="buyUpgrade(1)">+Сила клика<br>10💰</button>
-      <button class="upgrade-btn" id="up2" onclick="buyUpgrade(2)">Авто-клик<br>50💰</button>
-      <button class="upgrade-btn" id="up3" onclick="buyUpgrade(3)">Фабрика<br>200💰</button>
-      <button class="upgrade-btn" id="up4" onclick="buyUpgrade(4)">Мега-фабрика<br>1000💰</button>
+      <button class="upgrade-btn" id="up1" onclick="buy(1)">+Сила клика<br>10 💰</button>
+      <button class="upgrade-btn" id="up2" onclick="buy(2)">Авто-клик<br>50 💰</button>
+      <button class="upgrade-btn" id="up3" onclick="buy(3)">Фабрика<br>200 💰</button>
+      <button class="upgrade-btn" id="up4" onclick="buy(4)">Мега-фабрика<br>1000 💰</button>
     </div>
   </div>
+
   <script>
-    let money=0,clickPower=1,auto=0,costs=[10,50,200,1000],owned=[0,0,0,0];
-    function updateUI(){
-      document.getElementById('money').textContent=Math.floor(money);
-      document.getElementById('mps').textContent=auto.toFixed(1);
-      document.getElementById('up1').innerHTML=`+Сила клика (x${owned[0]})<br>${costs[0]}💰`;
-      document.getElementById('up2').innerHTML=`Авто-клик (x${owned[1]})<br>${costs[1]}💰`;
-      document.getElementById('up3').innerHTML=`Фабрика (x${owned[2]})<br>${costs[2]}💰`;
-      document.getElementById('up4').innerHTML=`Мега-фабрика (x${owned[3]})<br>${costs[3]}💰`;
-      for(let i=1;i<=4;i++)document.getElementById('up'+i).disabled=money<costs[i-1];
-    }
-    function clickMoney(){money+=clickPower;updateUI();}
-    function buyUpgrade(id){
-      const idx=id-1;
-      if(money>=costs[idx]){
-        money-=costs[idx];owned[idx]++;
-        if(id===1)clickPower+=1; if(id===2)auto+=0.5; if(id===3)auto+=2; if(id===4)auto+=10;
-        costs[idx]=Math.floor(costs[idx]*1.5);updateUI();
+    let money = 0, power = 1, auto = 0;
+    let costs = [10, 50, 200, 1000], owned = [0,0,0,0];
+
+    function ui() {
+      document.getElementById('money').textContent = Math.floor(money);
+      document.getElementById('mps').textContent = auto.toFixed(1);
+      const labels = ['+Сила клика', 'Авто-клик', 'Фабрика', 'Мега-фабрика'];
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('up'+(i+1)).innerHTML = `${labels[i]} (x${owned[i]})<br>${costs[i]} 💰`;
+        document.getElementById('up'+(i+1)).disabled = money < costs[i];
       }
     }
-    setInterval(()=>{money+=auto/10;updateUI();},100);
-    updateUI();
+
+    function clickMoney() { money += power; ui(); }
+
+    function buy(id) {
+      const i = id - 1;
+      if (money < costs[i]) return;
+      money -= costs[i]; owned[i]++;
+      if (id === 1) power += 1;
+      if (id === 2) auto += 0.5;
+      if (id === 3) auto += 2;
+      if (id === 4) auto += 10;
+      costs[i] = Math.floor(costs[i] * 1.5);
+      ui();
+    }
+
+    setInterval(() => { money += auto / 10; ui(); }, 100);
+    ui();
   </script>
 </body>
 </html>
