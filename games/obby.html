@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obby Adventure | CubeVerse</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { overflow: hidden; }
+    #gameCanvas { display: block; margin: 0 auto; background: #1a1a2e; border-radius: 12px; }
+    .hud { position: absolute; top: 80px; left: 20px; font-size: 1.3rem; text-shadow: 0 0 10px #000; }
+    .win-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+    .win-screen.show { display: flex; }
+    .win-screen h2 { font-size: 3rem; color: #00f2fe; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div class="game-title">Obby Adventure</div>
+    <div></div>
+  </div>
+
+  <div class="hud">
+    <div>Уровень: <span id="level">1</span></div>
+    <div>Попытки: <span id="tries">0</span></div>
+  </div>
+
+  <canvas id="gameCanvas" width="900" height="500"></canvas>
+
+  <div class="win-screen" id="winScreen">
+    <h2>🎉 Ты победил!</h2>
+    <p style="font-size:1.5rem; margin-bottom:20px;">Отличная работа!</p>
+    <button class="play-btn" style="width:200px;" onclick="restart()">Заново</button>
+    <a href="../index.html" class="back-btn" style="margin-top:15px;">В меню</a>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let player = { x: 50, y: 400, w: 30, h: 40, vy: 0, onGround: false };
+    let platforms = [];
+    let level = 1;
+    let tries = 0;
+    let keys = {};
+    let finished = false;
+
+    function generateLevel() {
+      platforms = [
+        { x: 0, y: 450, w: 200, h: 50 },
+        { x: 250, y: 400, w: 120, h: 20 },
+        { x: 420, y: 350, w: 100, h: 20 },
+        { x: 560, y: 300, w: 100, h: 20 },
+        { x: 700, y: 250, w: 120, h: 20 },
+        { x: 850, y: 200, w: 50, h: 20 } // finish
+      ];
+      if (level > 1) {
+        platforms.push({ x: 300, y: 280, w: 80, h: 15 });
+        platforms.push({ x: 500, y: 220, w: 80, h: 15 });
+      }
+      player.x = 50; player.y = 400; player.vy = 0;
+      finished = false;
+      document.getElementById('winScreen').classList.remove('show');
+      document.getElementById('level').textContent = level;
+    }
+
+    function restart() {
+      level = 1;
+      tries = 0;
+      document.getElementById('tries').textContent = tries;
+      generateLevel();
+    }
+
+    generateLevel();
+
+    document.addEventListener('keydown', e => keys[e.code] = true);
+    document.addEventListener('keyup', e => keys[e.code] = false);
+
+    function update() {
+      if (finished) return;
+
+      // Movement
+      if (keys['ArrowLeft'] || keys['KeyA']) player.x -= 5;
+      if (keys['ArrowRight'] || keys['KeyD']) player.x += 5;
+      if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.onGround) {
+        player.vy = -14;
+        player.onGround = false;
+      }
+
+      player.vy += 0.7; // gravity
+      player.y += player.vy;
+
+      // Collision
+      player.onGround = false;
+      for (let p of platforms) {
+        if (player.x < p.x + p.w && player.x + player.w > p.x &&
+            player.y < p.y + p.h && player.y + player.h > p.y) {
+          if (player.vy > 0 && player.y + player.h - player.vy <= p.y + 5) {
+            player.y = p.y - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          }
+        }
+      }
+
+      // Fall
+      if (player.y > 520) {
+        tries++;
+        document.getElementById('tries').textContent = tries;
+        player.x = 50; player.y = 400; player.vy = 0;
+      }
+
+      // Win
+      if (player.x > 850 && player.y < 250) {
+        finished = true;
+        document.getElementById('winScreen').classList.add('show');
+        level++;
+      }
+
+      // Bounds
+      if (player.x < 0) player.x = 0;
+      if (player.x > 870) player.x = 870;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Platforms
+      ctx.fillStyle = '#4facfe';
+      for (let p of platforms) {
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, p.y, p.w, p.h);
+      }
+
+      // Finish flag
+      ctx.fillStyle = '#00ff88';
+      ctx.fillRect(860, 160, 10, 40);
+      ctx.beginPath();
+      ctx.moveTo(870, 160);
+      ctx.lineTo(900, 175);
+      ctx.lineTo(870, 190);
+      ctx.fill();
+
+      // Player
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(player.x + 6, player.y + 8, 8, 8);
+      ctx.fillRect(player.x + 16, player.y + 8, 8, 8);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>

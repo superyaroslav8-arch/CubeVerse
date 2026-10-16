@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Click Tycoon | CubeVerse</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .tycoon-container { max-width: 700px; margin: 30px auto; text-align: center; padding: 20px; }
+    .money { font-size: 3rem; color: #f9ca24; margin: 20px 0; text-shadow: 0 0 20px #f9ca24; }
+    .click-area {
+      width: 200px; height: 200px; margin: 30px auto;
+      background: linear-gradient(135deg, #f9ca24, #f0932b);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; cursor: pointer;
+      transition: transform 0.1s;
+      box-shadow: 0 0 40px rgba(249, 202, 36, 0.5);
+      user-select: none;
+    }
+    .click-area:active { transform: scale(0.92); }
+    .upgrades { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+    .upgrade-btn {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid #f9ca24;
+      color: white; padding: 15px; border-radius: 12px;
+      cursor: pointer; font-size: 1rem;
+    }
+    .upgrade-btn:hover { background: rgba(249,202,36,0.2); }
+    .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div class="game-title">Click Tycoon</div>
+    <div></div>
+  </div>
+
+  <div class="tycoon-container">
+    <div class="money">💰 <span id="money">0</span></div>
+    <p>Монет в секунду: <span id="mps">0</span></p>
+
+    <div class="click-area" id="clicker" onclick="clickMoney()">💰</div>
+
+    <div class="upgrades">
+      <button class="upgrade-btn" id="up1" onclick="buyUpgrade(1)">+Клик сила<br>10💰</button>
+      <button class="upgrade-btn" id="up2" onclick="buyUpgrade(2)">Авто-клик<br>50💰</button>
+      <button class="upgrade-btn" id="up3" onclick="buyUpgrade(3)">Фабрика<br>200💰</button>
+      <button class="upgrade-btn" id="up4" onclick="buyUpgrade(4)">Мега-фабрика<br>1000💰</button>
+    </div>
+  </div>
+
+  <script>
+    let money = 0;
+    let clickPower = 1;
+    let auto = 0;
+    let costs = [10, 50, 200, 1000];
+    let owned = [0, 0, 0, 0];
+
+    function updateUI() {
+      document.getElementById('money').textContent = Math.floor(money);
+      document.getElementById('mps').textContent = auto.toFixed(1);
+      document.getElementById('up1').innerHTML = `+Клик сила (x${owned[0]})<br>${costs[0]}💰`;
+      document.getElementById('up2').innerHTML = `Авто-клик (x${owned[1]})<br>${costs[1]}💰`;
+      document.getElementById('up3').innerHTML = `Фабрика (x${owned[2]})<br>${costs[2]}💰`;
+      document.getElementById('up4').innerHTML = `Мега-фабрика (x${owned[3]})<br>${costs[3]}💰`;
+
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('up' + i).disabled = money < costs[i-1];
+      }
+    }
+
+    function clickMoney() {
+      money += clickPower;
+      updateUI();
+    }
+
+    function buyUpgrade(id) {
+      const idx = id - 1;
+      if (money >= costs[idx]) {
+        money -= costs[idx];
+        owned[idx]++;
+        if (id === 1) clickPower += 1;
+        if (id === 2) auto += 0.5;
+        if (id === 3) auto += 2;
+        if (id === 4) auto += 10;
+        costs[idx] = Math.floor(costs[idx] * 1.5);
+        updateUI();
+      }
+    }
+
+    setInterval(() => {
+      money += auto / 10;
+      updateUI();
+    }, 100);
+
+    updateUI();
+  </script>
+</body>
+</html>

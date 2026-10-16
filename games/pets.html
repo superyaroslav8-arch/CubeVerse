@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Simulator | CubeVerse</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .pet-container { max-width: 800px; margin: 20px auto; text-align: center; }
+    .coins { font-size: 2.5rem; color: #f9ca24; margin: 15px; }
+    .pet-display { font-size: 6rem; margin: 20px; min-height: 120px; }
+    .pet-info { font-size: 1.3rem; margin-bottom: 20px; }
+    .actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .action-btn {
+      padding: 15px 25px; border: none; border-radius: 12px;
+      font-size: 1.1rem; font-weight: bold; cursor: pointer;
+      background: linear-gradient(90deg, #eb4d4b, #ff7979); color: white;
+    }
+    .action-btn:hover { opacity: 0.9; }
+    .pets-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
+    .pet-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; min-width: 100px; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div class="game-title">Pet Simulator</div>
+    <div></div>
+  </div>
+
+  <div class="pet-container">
+    <div class="coins">💰 <span id="coins">0</span></div>
+
+    <div class="pet-display" id="petEmoji">🐶</div>
+    <div class="pet-info">
+      <div id="petName">Щенок</div>
+      <div>Сила: <span id="petPower">1</span> | Уровень: <span id="petLevel">1</span></div>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn" onclick="collect()">Собрать монеты</button>
+      <button class="action-btn" onclick="feed()">Покормить (10💰)</button>
+      <button class="action-btn" onclick="buyPet()">Купить нового питомца (50💰)</button>
+    </div>
+
+    <div class="pets-list" id="petsList"></div>
+  </div>
+
+  <script>
+    let coins = 0;
+    let pets = [{ emoji: '🐶', name: 'Щенок', power: 1, level: 1 }];
+    let current = 0;
+
+    const petTypes = [
+      { emoji: '🐶', name: 'Щенок' },
+      { emoji: '🐱', name: 'Котик' },
+      { emoji: '🐯', name: 'Тигр' },
+      { emoji: '🦊', name: 'Лиса' },
+      { emoji: '🐻', name: 'Медведь' },
+      { emoji: '🦁', name: 'Лев' },
+      { emoji: '🐧', name: 'Пингвин' },
+      { emoji: '🦦', name: 'Единорог' }
+    ];
+
+    function update() {
+      const p = pets[current];
+      document.getElementById('coins').textContent = Math.floor(coins);
+      document.getElementById('petEmoji').textContent = p.emoji;
+      document.getElementById('petName').textContent = p.name;
+      document.getElementById('petPower').textContent = p.power;
+      document.getElementById('petLevel').textContent = p.level;
+
+      const list = document.getElementById('petsList');
+      list.innerHTML = '';
+      pets.forEach((pet, i) => {
+        const card = document.createElement('div');
+        card.className = 'pet-card';
+        card.innerHTML = `${pet.emoji}<br>${pet.name}<br>Сила ${pet.power}`;
+        card.style.border = i === current ? '2px solid #00f2fe' : 'none';
+        card.onclick = () => { current = i; update(); };
+        list.appendChild(card);
+      });
+    }
+
+    function collect() {
+      coins += pets[current].power;
+      update();
+    }
+
+    function feed() {
+      if (coins >= 10) {
+        coins -= 10;
+        pets[current].power += 1;
+        if (pets[current].power % 5 === 0) pets[current].level++;
+        update();
+      }
+    }
+
+    function buyPet() {
+      if (coins >= 50) {
+        coins -= 50;
+        const type = petTypes[Math.floor(Math.random() * petTypes.length)];
+        pets.push({ ...type, power: 1 + Math.floor(Math.random() * 3), level: 1 });
+        current = pets.length - 1;
+        update();
+      }
+    }
+
+    // Auto collect
+    setInterval(() => {
+      coins += pets.reduce((s, p) => s + p.power * 0.1, 0);
+      update();
+    }, 1000);
+
+    update();
+  </script>
+</body>
+</html>
