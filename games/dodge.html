@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Уворот — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { background: #0d0d12; overflow: hidden; }
+    #canvas { display: block; margin: 16px auto; background: #1a1a24; border-radius: 16px; }
+    .hud { text-align: center; padding: 10px; font-size: 1.2rem; color: #a0a0b0; }
+    .hint { text-align: center; color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div style="font-weight:700">⚡ Уворот</div>
+    <div style="width:90px"></div>
+  </div>
+  <div class="hud">Время: <span id="time">0</span>с &nbsp;•&nbsp; Рекорд: <span id="record">0</span>с</div>
+  <canvas id="canvas" width="400" height="500"></canvas>
+  <p class="hint">Стрелки ← → или A D</p>
+  <script>
+    const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+    let player = { x: 180, w: 40, h: 40 }, blocks = [], keys = {}, t = 0, alive = true;
+    let record = +localStorage.getItem('ks_dodge_record') || 0;
+    document.getElementById('record').textContent = record;
+
+    document.addEventListener('keydown', e => keys[e.code] = true);
+    document.addEventListener('keyup', e => keys[e.code] = false);
+
+    setInterval(() => {
+      if (!alive) return;
+      blocks.push({ x: Math.random()*360, y: -30, w: 30+Math.random()*30, h: 20, speed: 2+t*0.05 });
+    }, 500);
+
+    setInterval(() => {
+      if (!alive) return;
+      t++; document.getElementById('time').textContent = t;
+    }, 1000);
+
+    function loop() {
+      if (!alive) return;
+      if (keys['ArrowLeft']||keys['KeyA']) player.x -= 6;
+      if (keys['ArrowRight']||keys['KeyD']) player.x += 6;
+      player.x = Math.max(0, Math.min(360, player.x));
+
+      ctx.fillStyle = '#1a1a24'; ctx.fillRect(0,0,400,500);
+      ctx.fillStyle = '#00c853'; ctx.fillRect(player.x, 440, player.w, player.h);
+
+      ctx.fillStyle = '#ff6b6b';
+      for (let b of blocks) {
+        b.y += b.speed;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        if (b.y + b.h > 440 && b.y < 480 && b.x < player.x+player.w && b.x+b.w > player.x) {
+          alive = false;
+          if (t > record) { record = t; localStorage.setItem('ks_dodge_record', record); }
+          setTimeout(() => { alert('Время: ' + t + 'с'); location.reload(); }, 100);
+        }
+      }
+      blocks = blocks.filter(b => b.y < 520);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>

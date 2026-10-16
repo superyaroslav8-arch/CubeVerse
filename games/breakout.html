@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Арканоид — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { background: #0d0d12; overflow: hidden; }
+    #canvas { display: block; margin: 16px auto; background: #1a1a24; border-radius: 16px; }
+    .hud { text-align: center; padding: 10px; font-size: 1.15rem; color: #a0a0b0; }
+    .hint { text-align: center; color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div style="font-weight:700">🧱 Арканоид</div>
+    <div style="width:90px"></div>
+  </div>
+  <div class="hud">Счёт: <span id="score">0</span> &nbsp;•&nbsp; Уровень: <span id="level">1</span></div>
+  <canvas id="canvas" width="480" height="400"></canvas>
+  <p class="hint">Мышь или стрелки ← →</p>
+  <script>
+    const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+    let paddle = { x: 200, w: 80, h: 12 }, ball = { x: 240, y: 300, vx: 3, vy: -3, r: 7 };
+    let bricks = [], score = 0, level = 1, keys = {}, alive = true;
+
+    function buildBricks() {
+      bricks = [];
+      const rows = 3 + level, cols = 8;
+      const colors = ['#ff6b6b','#f9ca24','#00c853','#74b9ff','#a29bfe'];
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          bricks.push({ x: c*60+10, y: r*22+30, w: 54, h: 16, color: colors[r % colors.length], alive: true });
+    }
+    buildBricks();
+
+    document.addEventListener('keydown', e => keys[e.code] = true);
+    document.addEventListener('keyup', e => keys[e.code] = false);
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      paddle.x = (e.clientX - rect.left) * (480/rect.width) - paddle.w/2;
+    });
+
+    function loop() {
+      if (!alive) return;
+      if (keys['ArrowLeft'] || keys['KeyA']) paddle.x -= 7;
+      if (keys['ArrowRight'] || keys['KeyD']) paddle.x += 7;
+      paddle.x = Math.max(0, Math.min(480 - paddle.w, paddle.x));
+
+      ball.x += ball.vx; ball.y += ball.vy;
+      if (ball.x < ball.r || ball.x > 480-ball.r) ball.vx *= -1;
+      if (ball.y < ball.r) ball.vy *= -1;
+
+      if (ball.y + ball.r > 380 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+        ball.vy = -Math.abs(ball.vy);
+        ball.vx = ((ball.x - (paddle.x + paddle.w/2)) / (paddle.w/2)) * 4;
+      }
+
+      if (ball.y > 400) {
+        alive = false;
+        setTimeout(() => { alert('Проигрыш! Счёт: ' + score); location.reload(); }, 100);
+        return;
+      }
+
+      for (let b of bricks) {
+        if (!b.alive) continue;
+        if (ball.x > b.x && ball.x < b.x+b.w && ball.y > b.y && ball.y < b.y+b.h) {
+          b.alive = false; ball.vy *= -1; score += 10;
+          document.getElementById('score').textContent = score;
+        }
+      }
+
+      if (bricks.every(b => !b.alive)) {
+        level++; document.getElementById('level').textContent = level;
+        ball = { x: 240, y: 300, vx: 3+level*0.3, vy: -3-level*0.3, r: 7 };
+        buildBricks();
+      }
+
+      ctx.fillStyle = '#1a1a24'; ctx.fillRect(0,0,480,400);
+      ctx.fillStyle = '#00c853'; ctx.fillRect(paddle.x, 380, paddle.w, paddle.h);
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+      for (let b of bricks) {
+        if (!b.alive) continue;
+        ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h);
+      }
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>

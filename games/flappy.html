@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Cube — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { background: #0d0d12; overflow: hidden; }
+    #canvas { display: block; margin: 16px auto; background: linear-gradient(#87CEEB, #98D8AA); border-radius: 16px; }
+    .hud { text-align: center; padding: 10px; font-size: 1.3rem; color: #a0a0b0; }
+    .hint { text-align: center; color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div style="font-weight:700">📦 Flappy Cube</div>
+    <div style="width:90px"></div>
+  </div>
+  <div class="hud">Счёт: <span id="score">0</span></div>
+  <canvas id="canvas" width="400" height="500"></canvas>
+  <p class="hint">Пробел / Клик / Тап — прыжок</p>
+  <script>
+    const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+    let bird = { x: 80, y: 200, vy: 0 }, pipes = [], score = 0, alive = true, frame = 0;
+
+    function jump() { if (alive) bird.vy = -7; }
+    document.addEventListener('keydown', e => { if (e.code==='Space') jump(); });
+    canvas.addEventListener('click', jump);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); jump(); });
+
+    function spawnPipe() {
+      const gap = 140, top = 50 + Math.random() * 200;
+      pipes.push({ x: 400, top, bottom: top + gap, passed: false });
+    }
+
+    function loop() {
+      if (!alive) return;
+      frame++;
+      if (frame % 90 === 0) spawnPipe();
+
+      bird.vy += 0.4; bird.y += bird.vy;
+
+      ctx.clearRect(0,0,400,500);
+      // bird
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(bird.x, bird.y, 30, 30);
+
+      ctx.fillStyle = '#00c853';
+      for (let p of pipes) {
+        p.x -= 2.5;
+        ctx.fillRect(p.x, 0, 50, p.top);
+        ctx.fillRect(p.x, p.bottom, 50, 500 - p.bottom);
+
+        if (!p.passed && p.x + 50 < bird.x) { p.passed = true; score++; document.getElementById('score').textContent = score; }
+
+        if (bird.x < p.x+50 && bird.x+30 > p.x && (bird.y < p.top || bird.y+30 > p.bottom)) {
+          alive = false;
+          setTimeout(() => { alert('Счёт: ' + score); location.reload(); }, 100);
+        }
+      }
+      pipes = pipes.filter(p => p.x > -60);
+
+      if (bird.y < 0 || bird.y > 470) {
+        alive = false;
+        setTimeout(() => { alert('Счёт: ' + score); location.reload(); }, 100);
+      }
+
+      requestAnimationFrame(loop);
+    }
+    spawnPipe();
+    loop();
+  </script>
+</body>
+</html>

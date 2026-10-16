@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мемори — Кибер-склад</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { background: #0d0d12; }
+    .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 400px; margin: 20px auto; padding: 0 12px; }
+    .card {
+      aspect-ratio: 1; background: #1a1a24; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 2rem; cursor: pointer;
+      transition: transform 0.2s, background 0.2s; border: 2px solid transparent;
+    }
+    .card:hover { border-color: rgba(0,200,83,0.3); }
+    .card.open, .card.matched { background: #2a2a36; }
+    .card.matched { opacity: 0.6; cursor: default; }
+    .hud { text-align: center; padding: 12px; font-size: 1.15rem; color: #a0a0b0; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <a href="../index.html" class="back-btn">← Назад</a>
+    <div style="font-weight:700">🧠 Мемори</div>
+    <div style="width:90px"></div>
+  </div>
+  <div class="hud">Ходы: <span id="moves">0</span> &nbsp;•&nbsp; Найдено: <span id="found">0</span>/8</div>
+  <div class="board" id="board"></div>
+  <script>
+    const emojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
+    let cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+    let opened = [], matched = 0, moves = 0, lock = false;
+
+    const board = document.getElementById('board');
+    cards.forEach((emoji, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.idx = i;
+      card.dataset.emoji = emoji;
+      card.textContent = '';
+      card.onclick = () => flip(card);
+      board.appendChild(card);
+    });
+
+    function flip(card) {
+      if (lock || card.classList.contains('open') || card.classList.contains('matched')) return;
+      card.classList.add('open');
+      card.textContent = card.dataset.emoji;
+      opened.push(card);
+
+      if (opened.length === 2) {
+        moves++; document.getElementById('moves').textContent = moves;
+        lock = true;
+        if (opened[0].dataset.emoji === opened[1].dataset.emoji) {
+          opened.forEach(c => c.classList.add('matched'));
+          matched++; document.getElementById('found').textContent = matched;
+          opened = []; lock = false;
+          if (matched === 8) setTimeout(() => alert('Победа! Ходов: ' + moves), 300);
+        } else {
+          setTimeout(() => {
+            opened.forEach(c => { c.classList.remove('open'); c.textContent = ''; });
+            opened = []; lock = false;
+          }, 700);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
