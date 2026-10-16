@@ -1,290 +1,185 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Кибер-склад — 100+ игр</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="logo.svg" type="image/svg+xml">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Кибер-склад</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-<header class="header">
-  <a href="index.html" class="logo-link"><img src="logo.svg" alt=""><span>Кибер-склад</span></a>
-  <div class="search-box"><span style="opacity:.45">🔍</span><input id="searchInput" placeholder="Поиск среди 100+ игр..." oninput="filterGames()"></div>
-  <div class="header-right" id="authArea"></div>
-</header>
-
-<div class="container">
-  <section class="section">
-    <div class="section-header"><h2>🔥 Рекомендуемые</h2><span>сейчас в топе</span></div>
-    <div class="games-grid" id="featured"></div>
-  </section>
-  <section class="section">
-    <div class="section-header"><h2>⚽ Спорт</h2></div>
-    <div class="games-grid" id="sports"></div>
-  </section>
-  <section class="section">
-    <div class="section-header"><h2>🏃 Паркур и Экшен</h2></div>
-    <div class="games-grid" id="action"></div>
-  </section>
-  <section class="section">
-    <div class="section-header"><h2>🎮 Аркады и Головоломки</h2></div>
-    <div class="games-grid" id="arcade"></div>
-  </section>
-  <section class="section">
-    <div class="section-header"><h2>📦 Все игры <span id="totalCount"></span></h2></div>
-    <div class="games-grid" id="all"></div>
-  </section>
+<div class="topbar">
+  <a href="index.html" class="logo"><img src="logo.svg" alt=""><span>Кибер-склад</span></a>
+  <div class="search"><span style="opacity:.5">🔍</span><input id="q" placeholder="Поиск игр..." oninput="doSearch()"></div>
+  <div class="top-right" id="authArea"></div>
 </div>
 
-<div class="modal-overlay" id="authModal">
+<div class="page">
+  <div class="chips" id="chips">
+    <div class="chip active" data-cat="all" onclick="setCat(this)">Все</div>
+    <div class="chip" data-cat="action" onclick="setCat(this)">Паркур</div>
+    <div class="chip" data-cat="sport" onclick="setCat(this)">Спорт</div>
+    <div class="chip" data-cat="arcade" onclick="setCat(this)">Аркады</div>
+    <div class="chip" data-cat="idle" onclick="setCat(this)">Симуляторы</div>
+    <div class="chip" data-cat="puzzle" onclick="setCat(this)">Головоломки</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔥 Рекомендуемые</div>
+    <div class="grid" id="featured"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🎮 Игры <span id="cnt"></span></div>
+    <div class="grid" id="grid"></div>
+    <button class="load-more" id="moreBtn" onclick="loadMore()">Показать ещё</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="authModal">
   <div class="modal">
     <h2 id="mTitle">Вход</h2>
-    <p class="sub" id="mSub">Войди, чтобы сохранять прогресс</p>
+    <p class="sub" id="mSub">Сохраняй прогресс и рекорды</p>
     <div class="err" id="authErr"></div>
     <div id="loginForm">
-      <label>Логин</label><input id="loginName" maxlength="20" placeholder="Твой логин">
-      <label>Пароль</label><input id="loginPass" type="password" maxlength="30" placeholder="Пароль">
-      <button class="btn btn-primary btn-full" onclick="doLogin()">Войти</button>
+      <label>Логин</label><input id="loginName" maxlength="20">
+      <label>Пароль</label><input id="loginPass" type="password" maxlength="30">
+      <button class="btn btn-blue full" onclick="doLogin()">Войти</button>
       <div class="switch">Нет аккаунта? <a onclick="showReg()">Регистрация</a></div>
     </div>
     <div id="regForm" style="display:none">
-      <label>Логин</label><input id="regName" maxlength="20" placeholder="Придумай логин">
-      <label>Пароль</label><input id="regPass" type="password" maxlength="30" placeholder="Пароль">
-      <label>Повтори пароль</label><input id="regPass2" type="password" maxlength="30" placeholder="Ещё раз">
-      <button class="btn btn-primary btn-full" onclick="doReg()">Создать аккаунт</button>
-      <div class="switch">Уже есть? <a onclick="showLogin()">Войти</a></div>
+      <label>Логин</label><input id="regName" maxlength="20">
+      <label>Пароль</label><input id="regPass" type="password" maxlength="30">
+      <label>Повтори</label><input id="regPass2" type="password" maxlength="30">
+      <button class="btn btn-blue full" onclick="doReg()">Создать</button>
+      <div class="switch">Есть аккаунт? <a onclick="showLogin()">Войти</a></div>
     </div>
   </div>
 </div>
 
 <script src="auth.js"></script>
 <script>
-// Базовые движки
-const ENGINES = {
-  obby: 'games/obby.html',
-  obby2: 'games/obby2.html',
-  tycoon: 'games/tycoon.html',
-  racing: 'games/racing.html',
-  hangout: 'games/hangout.html',
-  pets: 'games/pets.html',
-  snake: 'games/snake.html',
-  flappy: 'games/flappy.html',
-  memory: 'games/memory.html',
-  breakout: 'games/breakout.html',
-  dodge: 'games/dodge.html',
-  g2048: 'games/game2048.html',
-  football: 'games/football.html',
-  hockey: 'games/hockey.html',
-  basket: 'games/basket.html',
-  tennis: 'games/tennis.html'
+const ENGINES={
+  obby:'games/obby.html',obby2:'games/obby2.html',tycoon:'games/tycoon.html',
+  racing:'games/racing.html',hangout:'games/hangout.html',pets:'games/pets.html',
+  snake:'games/snake.html',flappy:'games/flappy.html',memory:'games/memory.html',
+  breakout:'games/breakout.html',dodge:'games/dodge.html',g2048:'games/game2048.html',
+  football:'games/football.html',hockey:'games/hockey.html',basket:'games/basket.html',
+  tennis:'games/tennis.html'
 };
+const COL=['linear-gradient(135deg,#e74c3c,#c0392b)','linear-gradient(135deg,#e67e22,#d35400)',
+'linear-gradient(135deg,#f1c40f,#f39c12)','linear-gradient(135deg,#2ecc71,#27ae60)',
+'linear-gradient(135deg,#1abc9c,#16a085)','linear-gradient(135deg,#3498db,#2980b9)',
+'linear-gradient(135deg,#9b59b6,#8e44ad)','linear-gradient(135deg,#e91e63,#c2185b)',
+'linear-gradient(135deg,#00bcd4,#0097a7)','linear-gradient(135deg,#ff5722,#e64a19)',
+'linear-gradient(135deg,#607d8b,#455a64)','linear-gradient(135deg,#795548,#5d4037)'];
+const EM=['🏃','💰','🏎️','👫','🐶','🏗️','🐍','📦','🧠','🧱','⚡','🔢','⚽','🏒','🏀','🎾',
+'🎯','🚀','👾','🐉','🦄','🐱','🦊','🐻','🦁','🐸','🐲','🦸','🧙','👻','🔥','❄️','🌈','💎',
+'🛡️','⚔️','🏹','💣','🎲','🎸','🏆','🎮','🕹️','🏈','⚾','🏐','🏓','🎳','🥊','🚴','🏄','🧗'];
 
-const COLORS = [
-  'linear-gradient(135deg,#ff6b6b,#ee5a24)','linear-gradient(135deg,#f9ca24,#f0932b)',
-  'linear-gradient(135deg,#4834d4,#686de0)','linear-gradient(135deg,#6ab04c,#badc58)',
-  'linear-gradient(135deg,#eb4d4b,#ff7979)','linear-gradient(135deg,#22a6b3,#7ed6df)',
-  'linear-gradient(135deg,#00b894,#55efc4)','linear-gradient(135deg,#fd79a8,#e84393)',
-  'linear-gradient(135deg,#a29bfe,#6c5ce7)','linear-gradient(135deg,#fdcb6e,#e17055)',
-  'linear-gradient(135deg,#74b9ff,#0984e3)','linear-gradient(135deg,#ffeaa7,#fdcb6e)',
-  'linear-gradient(135deg,#00b894,#00cec9)','linear-gradient(135deg,#e17055,#d63031)',
-  'linear-gradient(135deg,#55efc4,#00b894)','linear-gradient(135deg,#6c5ce7,#a29bfe)',
-  'linear-gradient(135deg,#fd79a8,#fdcb6e)','linear-gradient(135deg,#00cec9,#0984e3)',
-  'linear-gradient(135deg,#d63031,#e17055)','linear-gradient(135deg,#2d3436,#636e72)'
-];
+// Огромный каталог (генерируется)
+const PRE=['Super','Mega','Ultra','Pro','Epic','Neon','Dark','Cyber','Pixel','Retro','Fire','Ice',
+'Thunder','Shadow','Golden','Crystal','Ninja','Space','Ocean','Forest','Desert','Sky','Lava',
+'Frost','Storm','Quantum','Hyper','Turbo','Elite','Master','Legend','Royal','Magic','Dragon',
+'Phantom','Solar','Lunar','Cosmic','Atomic','Turbo','Blitz','Rapid','Swift','Brave','Mighty'];
+const MID=['Obby','Parkour','Run','Rush','Race','Jump','Quest','Adventure','Tycoon','Clicker',
+'Simulator','Arena','Battle','Wars','Legends','Heroes','World','Land','Zone','Cup','League',
+'Snake','Flappy','Breakout','Memory','Dodge','Football','Hockey','Basket','Tennis','Pets'];
+const CATMAP={Obby:'action',Parkour:'action',Run:'action',Rush:'action',Race:'action',Jump:'action',
+Quest:'action',Adventure:'action',Tycoon:'idle',Clicker:'idle',Simulator:'idle',Arena:'sport',
+Battle:'action',Wars:'action',Legends:'action',Heroes:'action',World:'social',Land:'social',
+Zone:'social',Cup:'sport',League:'sport',Snake:'arcade',Flappy:'arcade',Breakout:'arcade',
+Memory:'puzzle',Dodge:'action',Football:'sport',Hockey:'sport',Basket:'sport',Tennis:'sport',Pets:'idle'};
+const ENGMAP={Obby:'obby',Parkour:'obby2',Run:'obby',Rush:'dodge',Race:'racing',Jump:'obby2',
+Quest:'obby',Adventure:'obby2',Tycoon:'tycoon',Clicker:'tycoon',Simulator:'pets',Arena:'football',
+Battle:'dodge',Wars:'dodge',Legends:'obby',Heroes:'obby2',World:'hangout',Land:'hangout',
+Zone:'hangout',Cup:'football',League:'hockey',Snake:'snake',Flappy:'flappy',Breakout:'breakout',
+Memory:'memory',Dodge:'dodge',Football:'football',Hockey:'hockey',Basket:'basket',Tennis:'tennis',Pets:'pets'};
 
-const EMOJIS = ['🏃','💰','🏎️','👫','🐶','🏗️','🐍','📦','🧠','🧱','⚡','🔢','⚽','🏒','🏀','🎾',
-  '🎯','🚀','👾','🐉','🦄','🐱','🦊','🐻','🦁','🐸','🐲','🦸','🧙','👻','🔥','❄️','🌈','💎',
-  '🛡️','⚔️','🏹','💣','🎲','🃏','🎸','🎹','🏆','🥇','🎮','🕹️','🏀','⚽','🏈','⚾','🏐','🏓',
-  '🎳','🥊','🚴','🏄','🪂','⛷️','🏂','🧗','🧩','♟️','🎰','🎪','🎭','🎨','🎬','🎤'];
+const TOTAL=5000; // показываем как большой каталог
+let allGames=[], shown=0, pageSize=48, currentCat='all', searchQ='';
 
-// Генерируем 100+ игр
-const BASE = [
-  {name:'Obby Adventure',desc:'Классический паркур на 6 уровней',engine:'obby',cat:'action',emoji:'🏃'},
-  {name:'Sky Obby',desc:'Небесный паркур. 5 сложных уровней',engine:'obby2',cat:'action',emoji:'🏗️'},
-  {name:'Extreme Parkour',desc:'Самый сложный паркур',engine:'obby',cat:'action',emoji:'🧗'},
-  {name:'Ninja Run',desc:'Беги как ниндзя по крышам',engine:'obby',cat:'action',emoji:'🥷'},
-  {name:'Lava Escape',desc:'Убеги от лавы!',engine:'obby2',cat:'action',emoji:'🌋'},
-  {name:'Click Tycoon',desc:'Кликай и богатей',engine:'tycoon',cat:'idle',emoji:'💰'},
-  {name:'Factory Tycoon',desc:'Построй империю фабрик',engine:'tycoon',cat:'idle',emoji:'🏭'},
-  {name:'Crypto Clicker',desc:'Майни монеты кликами',engine:'tycoon',cat:'idle',emoji:'₿'},
-  {name:'Speed Race',desc:'Гонки на скорость',engine:'racing',cat:'action',emoji:'🏎️'},
-  {name:'Night Drift',desc:'Ночные гонки',engine:'racing',cat:'action',emoji:'🌙'},
-  {name:'Hangout Plaza',desc:'Гуляй и общайся',engine:'hangout',cat:'social',emoji:'👫'},
-  {name:'Pet Simulator',desc:'Собирай питомцев',engine:'pets',cat:'idle',emoji:'🐶'},
-  {name:'Dragon Pets',desc:'Собери всех драконов',engine:'pets',cat:'idle',emoji:'🐉'},
-  {name:'Змейка',desc:'Классическая змейка',engine:'snake',cat:'arcade',emoji:'🐍'},
-  {name:'Neon Snake',desc:'Неоновая змейка',engine:'snake',cat:'arcade',emoji:'✨'},
-  {name:'Flappy Cube',desc:'Летай между труб',engine:'flappy',cat:'arcade',emoji:'📦'},
-  {name:'Flappy Bird',desc:'Классический полёт',engine:'flappy',cat:'arcade',emoji:'🐦'},
-  {name:'Мемори',desc:'Найди все пары',engine:'memory',cat:'puzzle',emoji:'🧠'},
-  {name:'Арканоид',desc:'Разбей все блоки',engine:'breakout',cat:'arcade',emoji:'🧱'},
-  {name:'Уворот',desc:'Уворачивайся от блоков',engine:'dodge',cat:'action',emoji:'⚡'},
-  {name:'2048',desc:'Собери 2048',engine:'g2048',cat:'puzzle',emoji:'🔢'},
-  {name:'Футбол',desc:'Забивай голы против бота',engine:'football',cat:'sport',emoji:'⚽'},
-  {name:'Хоккей',desc:'Забрось шайбу',engine:'hockey',cat:'sport',emoji:'🏒'},
-  {name:'Баскетбол',desc:'Бросай в кольцо',engine:'basket',cat:'sport',emoji:'🏀'},
-  {name:'Теннис',desc:'Отбивай мяч',engine:'tennis',cat:'sport',emoji:'🎾'},
-];
+function makeGames(){
+  allGames=[];
+  // Реальные базовые
+  const real=[
+    {n:'Obby Adventure',d:'100 уровней паркура!',e:'obby',c:'action',em:'🏃'},
+    {n:'Sky Obby',d:'Небесный паркур с 100 уровнями',e:'obby2',c:'action',em:'🏗️'},
+    {n:'Click Tycoon',d:'Кликай и строй империю',e:'tycoon',c:'idle',em:'💰'},
+    {n:'Speed Race',d:'Гонки на выживание',e:'racing',c:'action',em:'🏎️'},
+    {n:'Hangout Plaza',d:'Гуляй с друзьями',e:'hangout',c:'social',em:'👫'},
+    {n:'Pet Simulator',d:'Собери всех питомцев',e:'pets',c:'idle',em:'🐶'},
+    {n:'Змейка',d:'Классика',e:'snake',c:'arcade',em:'🐍'},
+    {n:'Flappy Cube',d:'Летай между труб',e:'flappy',c:'arcade',em:'📦'},
+    {n:'Мемори',d:'Найди пары',e:'memory',c:'puzzle',em:'🧠'},
+    {n:'Арканоид',d:'Разбей блоки',e:'breakout',c:'arcade',em:'🧱'},
+    {n:'Уворот',d:'Не дай себя задеть',e:'dodge',c:'action',em:'⚡'},
+    {n:'2048',d:'Собери плитку',e:'g2048',c:'puzzle',em:'🔢'},
+    {n:'Футбол',d:'Забивай голы',e:'football',c:'sport',em:'⚽'},
+    {n:'Хоккей',d:'Забрось шайбу',e:'hockey',c:'sport',em:'🏒'},
+    {n:'Баскетбол',d:'Бросай в кольцо',e:'basket',c:'sport',em:'🏀'},
+    {n:'Теннис',d:'Отбивай мяч',e:'tennis',c:'sport',em:'🎾'},
+  ];
+  real.forEach((r,i)=>allGames.push({id:i,name:r.n,desc:r.d,emoji:r.em,color:COL[i%COL.length],players:800+Math.floor(Math.random()*3000),file:ENGINES[r.e],cat:r.c}));
 
-// Дополнительные варианты для набора 100+
-const VARIANTS = [
-  // Паркур / Action
-  ['Space Obby','Паркур в космосе','obby','action','🚀'],
-  ['Ice Parkour','Скользкий ледяной паркур','obby2','action','❄️'],
-  ['Fire Run','Беги от огня','obby','action','🔥'],
-  ['Shadow Ninja','Паркур в тенях','obby2','action','🌑'],
-  ['Rainbow Obby','Яркий радужный паркур','obby','action','🌈'],
-  ['Cyber Run','Кибер-паркour','obby2','action','🤖'],
-  ['Jungle Escape','Побег из джунглей','obby','action','🌴'],
-  ['Roof Jump','Прыжки по крышам','obby2','action','🏢'],
-  ['Tower Climb','Заберись на башню','obby','action','🗼'],
-  ['Crystal Path','Путь из кристаллов','obby2','action','💎'],
-  // Idle / Tycoon
-  ['Farm Tycoon','Фермерский бизнес','tycoon','idle','🌾'],
-  ['Pizza Clicker','Пеки пиццу','tycoon','idle','🍕'],
-  ['Mine Empire','Шахтёрская империя','tycoon','idle','⛏️'],
-  ['Cafe Tycoon','Открой свою кафешку','tycoon','idle','☕'],
-  ['Galaxy Miner','Добывай ресурсы в космосе','tycoon','idle','🌌'],
-  ['Zombie Tycoon','Бизнес на зомби','tycoon','idle','🧟'],
-  ['Pet Empire','Империя питомцев','pets','idle','🐾'],
-  ['Cat Collector','Собери всех котиков','pets','idle','🐱'],
-  ['Dog Simulator','Собачий симулятор','pets','idle','🐕'],
-  // Racing
-  ['City Race','Городские гонки','racing','action','🏙️'],
-  ['Desert Rally','Ралли по пустыне','racing','action','🏜️'],
-  ['Snow Race','Гонки по снегу','racing','action','⛄'],
-  ['Turbo Drift','Турбо-дрифт','racing','action','💨'],
-  // Arcade
-  ['Mega Snake','Огромная змейка','snake','arcade','🐍'],
-  ['Pixel Snake','Пиксельная змейка','snake','arcade','👾'],
-  ['Space Flappy','Полёт в космосе','flappy','arcade','🛸'],
-  ['Ghost Flappy','Призрачный полёт','flappy','arcade','👻'],
-  ['Super Breakout','Супер арканоид','breakout','arcade','💥'],
-  ['Color Breaker','Цветной арканоид','breakout','arcade','🎨'],
-  ['Lightning Dodge','Уворот от молний','dodge','action','⚡'],
-  ['Meteor Avoid','Уворачивайся от метеоритов','dodge','action','☄️'],
-  // Puzzle
-  ['Memory Pro','Сложная мемори','memory','puzzle','🧩'],
-  ['Emoji Memory','Мемори с эмодзи','memory','puzzle','😊'],
-  ['2048 Extreme','Экстремальный 2048','g2048','puzzle','🔥'],
-  ['4096 Challenge','Собери 4096','g2048','puzzle','🏆'],
-  // Sport extras
-  ['Street Football','Уличный футбол','football','sport','⚽'],
-  ['Pro Hockey','Профессиональный хоккей','hockey','sport','🏒'],
-  ['Streetball','Стритбол','basket','sport','🏀'],
-  ['Beach Tennis','Пляжный теннис','tennis','sport','🏖️'],
-  ['Volleyball','Волейбол (режим)','tennis','sport','🏐'],
-  ['Ping Pong','Настольный теннис','tennis','sport','🏓'],
-  ['Baseball Hit','Бейсбол','basket','sport','⚾'],
-  ['Golf Putt','Гольф','basket','sport','⛳'],
-  // More variety
-  ['Zombie Hangout','Тусовка зомби','hangout','social','🧟'],
-  ['Space Plaza','Космическая площадь','hangout','social','🪐'],
-  ['Anime Run','Аниме-паркour','obby','action','🌸'],
-  ['Pixel Adventure','Пиксельное приключение','obby2','action','🕹️'],
-  ['Gold Rush','Золотая лихорадка','tycoon','idle','🥇'],
-  ['Diamond Clicker','Кликер алмазов','tycoon','idle','💎'],
-  ['Rocket Race','Ракетные гонки','racing','action','🚀'],
-  ['Bike Race','Велогонки','racing','action','🚴'],
-  ['Snake Royale','Королевская змейка','snake','arcade','👑'],
-  ['Flappy Royale','Королевский полёт','flappy','arcade','👑'],
-  ['Block Storm','Шторм блоков','dodge','action','🧱'],
-  ['Ice Breaker','Ледокол','breakout','arcade','🧊'],
-  ['Mind Master','Мастер памяти','memory','puzzle','🎓'],
-  ['Number King','Король чисел','g2048','puzzle','👑'],
-  ['Goal Machine','Машина голов','football','sport','⚽'],
-  ['Puck Master','Мастер шайбы','hockey','sport','🏒'],
-  ['Slam Dunk','Слэм-данк','basket','sport','🏀'],
-  ['Ace Serve','Подача туза','tennis','sport','🎾'],
-  ['Parkour King','Король паркура','obby','action','👑'],
-  ['Sky Master','Повелитель неба','obby2','action','☁️'],
-  ['Click God','Бог кликов','tycoon','idle','👆'],
-  ['Drift King','Король дрифта','racing','action','🏎️'],
-  ['Party Zone','Зона вечеринки','hangout','social','🎉'],
-  ['Legendary Pets','Легендарные питомцы','pets','idle','✨'],
-  ['Venom Snake','Ядовитая змейка','snake','arcade','☠️'],
-  ['Sky Bird','Небесная птица','flappy','arcade','🕊️'],
-  ['Brick Storm','Шторм кирпичей','breakout','arcade','🌪️'],
-  ['Bullet Dodge','Уворот от пуль','dodge','action','🔫'],
-  ['Card Memory','Карточная память','memory','puzzle','🃏'],
-  ['Tile Merge','Слияние плиток','g2048','puzzle','🔲'],
-  ['Champions League','Лига чемпионов','football','sport','🏆'],
-  ['Ice Arena','Ледовая арена','hockey','sport','🧊'],
-  ['NBA Stars','Звёзды НБА','basket','sport','⭐'],
-  ['Wimbledon','Уимблдон','tennis','sport','🍓'],
-];
-
-// Собираем полный список
-let GAMES = [];
-let idCounter = 1;
-
-function addGame(name, desc, engine, cat, emoji) {
-  const color = COLORS[GAMES.length % COLORS.length];
-  const players = 200 + Math.floor(Math.random() * 2500);
-  GAMES.push({
-    id: 'g' + (idCounter++),
-    name,
-    desc,
-    emoji: emoji || EMOJIS[GAMES.length % EMOJIS.length],
-    color,
-    players,
-    file: ENGINES[engine] || ENGINES.obby,
-    cat
-  });
+  // Генерируем остальные
+  for(let i=0;i<TOTAL-real.length;i++){
+    const p=PRE[i%PRE.length], m=MID[i%MID.length];
+    const name=p+' '+m+(i>MID.length*PRE.length?' '+((i%99)+1):'');
+    const cat=CATMAP[m]||'action';
+    const eng=ENGMAP[m]||'obby';
+    allGames.push({
+      id:real.length+i,
+      name,
+      desc: name+' — играй прямо сейчас!',
+      emoji:EM[i%EM.length],
+      color:COL[i%COL.length],
+      players:50+Math.floor(Math.random()*4000),
+      file:ENGINES[eng],
+      cat
+    });
+  }
 }
 
-// Базовые
-BASE.forEach(b => addGame(b.name, b.desc, b.engine, b.cat, b.emoji));
-
-// Варианты
-VARIANTS.forEach(v => addGame(v[0], v[1], v[2], v[3], v[4]));
-
-// Добиваем до 110+ случайными тематическими
-const prefixes = ['Super','Mega','Ultra','Pro','Epic','Legendary','Neon','Dark','Light','Cyber','Pixel','Retro','Future','Ancient','Magic','Fire','Ice','Thunder','Shadow','Golden'];
-const suffixes = ['Adventure','Quest','Run','Rush','Challenge','Master','Hero','Legend','Battle','Arena','World','Land','Zone','Cup','League','Simulator','Clicker','Tycoon','Race','Jump'];
-const enginesList = Object.keys(ENGINES);
-const cats = ['action','arcade','idle','puzzle','sport','social'];
-
-while (GAMES.length < 110) {
-  const name = prefixes[Math.floor(Math.random()*prefixes.length)] + ' ' + suffixes[Math.floor(Math.random()*suffixes.length)];
-  if (GAMES.some(g => g.name === name)) continue;
-  const eng = enginesList[Math.floor(Math.random()*enginesList.length)];
-  const cat = cats[Math.floor(Math.random()*cats.length)];
-  addGame(name, 'Увлекательная игра в жанре ' + cat, eng, cat, EMOJIS[Math.floor(Math.random()*EMOJIS.length)]);
+function cardHTML(g){
+  return `<div class="card" onclick="location.href='${g.file}'">
+    <div class="thumb" style="background:${g.color}">${g.emoji}
+      <div class="online">👤 ${g.players.toLocaleString('ru')}</div>
+    </div>
+    <div class="info">
+      <h3>${g.name}</h3>
+      <p>${g.desc}</p>
+      <button class="play" onclick="event.stopPropagation();location.href='${g.file}'">Играть</button>
+    </div>
+  </div>`;
 }
 
-function render(id, list) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = '';
-  list.forEach(g => {
-    const c = document.createElement('div');
-    c.className = 'game-card';
-    c.onclick = () => location.href = g.file;
-    c.innerHTML = `<div class="game-thumb" style="background:${g.color}">${g.emoji}<div class="players">👤 ${g.players.toLocaleString('ru')}</div></div>
-      <div class="game-body"><h3>${g.name}</h3><p>${g.desc}</p>
-      <div class="game-footer"><button class="play-btn" onclick="event.stopPropagation();location.href='${g.file}'">Играть</button></div></div>`;
-    el.appendChild(c);
-  });
+function getFiltered(){
+  let list=allGames;
+  if(currentCat!=='all') list=list.filter(g=>g.cat===currentCat);
+  if(searchQ) list=list.filter(g=>g.name.toLowerCase().includes(searchQ)||g.desc.toLowerCase().includes(searchQ));
+  return list;
 }
 
-function filterGames() {
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  document.querySelectorAll('.game-card').forEach(c => {
-    const n = c.querySelector('h3').textContent.toLowerCase();
-    const d = c.querySelector('p').textContent.toLowerCase();
-    c.style.display = (n.includes(q) || d.includes(q)) ? '' : 'none';
-  });
+function render(){
+  const list=getFiltered();
+  document.getElementById('cnt').textContent='('+list.length.toLocaleString('ru')+')';
+  document.getElementById('featured').innerHTML=list.slice(0,4).map(cardHTML).join('');
+  document.getElementById('grid').innerHTML=list.slice(0,shown).map(cardHTML).join('');
+  document.getElementById('moreBtn').style.display=shown>=list.length?'none':'block';
 }
 
-// Рендер
-render('featured', GAMES.slice(0, 4));
-render('sports', GAMES.filter(g => g.cat === 'sport').slice(0, 12));
-render('action', GAMES.filter(g => g.cat === 'action').slice(0, 12));
-render('arcade', GAMES.filter(g => g.cat === 'arcade' || g.cat === 'puzzle').slice(0, 12));
-render('all', GAMES);
-document.getElementById('totalCount').textContent = '(' + GAMES.length + ')';
+function loadMore(){shown+=pageSize;render()}
+function setCat(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentCat=el.dataset.cat;
+  shown=pageSize;render();
+}
+function doSearch(){searchQ=document.getElementById('q').value.toLowerCase().trim();shown=pageSize;render()}
+
+makeGames();
+shown=pageSize;
+render();
 updateAuthUI();
 </script>
 </body>
